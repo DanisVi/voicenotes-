@@ -1,4 +1,3 @@
-# voicenotes
 # VoiceNotes Pro 🔐
 
 Защищенное приложение для голосовых заметок с Face ID/Touch ID.
