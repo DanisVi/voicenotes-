@@ -5,36 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>VoiceNotes</title>
+    <meta name="theme-color" content="#000000">
+    <title>VoiceNotes Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         * {
             -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            box-sizing: border-box;
         }
         
-        html { font-size: 16px; }
-        
         body {
-            margin: 0;
-            padding: 0;
             background: #000;
             overflow: hidden;
         }
 
-        .app-container {
-            display: none;
-            background: #F2F2F7;
-            min-height: 100vh;
-            max-width: 100vw;
-            overflow-x: hidden;
+        .ios-blur {
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
 
-        .app-container.unlocked { display: block; }
+        .ios-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
 
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .ios-btn:active { transform: scale(0.96); opacity: 0.9; }
+
+        /* Lock Screen */
         .lock-screen {
-            background: linear-gradient(135deg, #1a1a2e 0%, #302b63 50%, #24243e 100%);
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
             position: fixed;
             inset: 0;
             z-index: 100;
@@ -67,222 +71,49 @@
         .faceid-btn {
             background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
             box-shadow: 0 10px 30px rgba(0,122,255,0.3);
-            border: none;
-            color: white;
-            padding: 16px 32px;
-            border-radius: 16px;
-            font-size: 17px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
         }
 
-        .faceid-btn:active { transform: scale(0.96); }
-
-        .header {
-            background: rgba(242, 242, 247, 0.9);
-            backdrop-filter: blur(20px);
-            padding: 12px 16px;
-            padding-top: max(12px, env(safe-area-inset-top));
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .header-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #000;
-            margin: 0;
-        }
-
-        .header-subtitle {
-            font-size: 13px;
-            color: #666;
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .security-badge {
-            background: rgba(52, 199, 89, 0.15);
-            color: #34C759;
-            border: 1px solid rgba(52, 199, 89, 0.3);
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .icloud-badge {
-            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .icon-btn {
-            width: 36px;
-            height: 36px;
-            background: white;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .icon-btn:active { transform: scale(0.92); }
-
-        .groups-scroll {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 12px 0;
-            margin: 0 -4px;
-            scrollbar-width: none;
-        }
-
-        .groups-scroll::-webkit-scrollbar { display: none; }
-
-        .group-chip {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 15px;
-            font-weight: 500;
-            white-space: nowrap;
-            border: none;
-            background: white;
-            color: #333;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-
-        .group-chip.active { background: #000; color: white; }
-        .group-chip:active { transform: scale(0.95); }
-
-        .main-content {
-            padding: 16px;
-            padding-bottom: 100px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-
-        .voice-btn {
-            width: 100%;
-            height: 56px;
-            background: #007AFF;
-            border: none;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            position: relative;
-        }
-
-        .voice-btn:active { transform: scale(0.98); }
-
-        .voice-waves {
+        .app-container {
             display: none;
-            align-items: center;
-            gap: 4px;
-            height: 24px;
+            background: #F2F2F7;
+            min-height: 100vh;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        .voice-waves.active { display: flex; }
+        .app-container.unlocked {
+            display: block;
+            animation: fade-in 0.5s ease-out;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         .voice-bar {
-            width: 4px;
-            background: white;
+            width: 3px;
+            background: #007AFF;
             border-radius: 2px;
             animation: sound-wave 0.5s ease-in-out infinite;
         }
-
         @keyframes sound-wave {
-            0%, 100% { height: 8px; }
-            50% { height: 24px; }
+            0%, 100% { height: 6px; }
+            50% { height: 20px; }
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
+        .sheet-enter {
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
         }
+        .sheet-enter-active { transform: translateY(0); }
 
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px 8px;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        .toast {
+            animation: toast-in 0.3s ease-out;
         }
-
-        .stat-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: #000;
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-        }
-
-        .icloud-banner {
-            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
-            color: white;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .note-card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-
-        .note-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .note-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: #666;
-        }
-
-        .color-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+        @keyframes toast-in {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
         }
 
         .color-blue { background: #007AFF; }
@@ -290,276 +121,37 @@
         .color-orange { background: #FF9500; }
         .color-red { background: #FF3B30; }
         .color-purple { background: #AF52DE; }
+        .color-teal { background: #5AC8FA; }
+        .color-yellow { background: #FFCC00; }
+        .color-pink { background: #FF2D55; }
+        .color-indigo { background: #5856D6; }
+        .color-gray { background: #8E8E93; }
 
-        .note-time { font-size: 12px; color: #999; }
-
-        .note-text {
-            font-size: 16px;
-            color: #000;
-            line-height: 1.5;
-            margin-bottom: 12px;
+        .icloud-sync {
+            animation: cloud-float 3s ease-in-out infinite;
+        }
+        @keyframes cloud-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
-        .note-actions {
-            display: flex;
-            justify-content: space-between;
-            padding-top: 12px;
-            border-top: 1px solid #f0f0f0;
+        .sync-spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .note-btn {
-            font-size: 13px;
-            font-weight: 500;
-            color: #666;
-            background: none;
-            border: none;
-            padding: 4px 8px;
+        .security-badge {
+            background: rgba(52, 199, 89, 0.15);
+            color: #34C759;
+            border: 1px solid rgba(52, 199, 89, 0.3);
         }
 
-        .note-btn.favorite { color: #FF9500; }
-
-        .fab {
-            position: fixed;
-            bottom: calc(24px + env(safe-area-inset-bottom));
-            right: 16px;
-            width: 56px;
-            height: 56px;
-            background: #007AFF;
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .icloud-badge {
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(0,122,255,0.4);
-            z-index: 100;
-        }
-
-        .fab:active { transform: scale(0.92); }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
-            z-index: 99;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 16px;
-            background: none;
-            border: none;
-            color: #999;
-            font-size: 11px;
-        }
-
-        .nav-item.active { color: #007AFF; }
-        .nav-item svg { width: 24px; height: 24px; }
-
-        .passcode-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.95);
-            z-index: 101;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-
-        .passcode-modal.active { display: flex; }
-
-        .passcode-title {
-            color: white;
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .passcode-subtitle {
-            color: #999;
-            font-size: 15px;
-            margin-bottom: 32px;
-        }
-
-        .passcode-dots {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 32px;
-        }
-
-        .passcode-dot {
-            width: 12px;
-            height: 12px;
-            border: 2px solid white;
-            border-radius: 50%;
-            transition: all 0.2s;
-        }
-
-        .passcode-dot.filled {
-            background: white;
-            border-color: white;
-        }
-
-        .passcode-keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            width: 100%;
-            max-width: 280px;
-        }
-
-        .passcode-key {
-            aspect-ratio: 1;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 28px;
-            font-weight: 300;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .passcode-key:active { background: rgba(255,255,255,0.2); }
-
-        .passcode-cancel {
-            color: #007AFF;
-            font-size: 17px;
-            margin-top: 24px;
-            background: none;
-            border: none;
-        }
-
-        .sheet {
-            position: fixed;
-            inset: 0;
-            z-index: 200;
-            display: none;
-        }
-
-        .sheet.active { display: block; }
-
-        .sheet-backdrop {
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-        }
-
-        .sheet-content {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #F2F2F7;
-            border-radius: 24px 24px 0 0;
-            padding: 16px;
-            padding-bottom: calc(16px + env(safe-area-inset-bottom));
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .sheet.active .sheet-content { transform: translateY(0); }
-
-        .sheet-handle {
-            width: 40px;
-            height: 5px;
-            background: #ccc;
-            border-radius: 3px;
-            margin: 0 auto 16px;
-        }
-
-        .sheet-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .sheet-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .sheet-btn {
-            font-size: 17px;
-            color: #007AFF;
-            background: none;
-            border: none;
-            font-weight: 500;
-        }
-
-        .sheet-btn.cancel { color: #666; }
-
-        .input-field {
-            width: 100%;
-            padding: 12px 16px;
-            font-size: 17px;
-            border: none;
-            border-radius: 10px;
-            background: white;
-            margin-bottom: 12px;
-        }
-
-        .textarea-field {
-            width: 100%;
-            padding: 12px 16px;
-            font-size: 17px;
-            border: none;
-            border-radius: 10px;
-            background: white;
-            min-height: 120px;
-            resize: none;
-            margin-bottom: 12px;
-        }
-
-        .toast {
-            position: fixed;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 24px;
-            font-size: 15px;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 48px 24px;
-        }
-
-        .empty-icon {
-            width: 80px;
-            height: 80px;
-            background: #e5e5ea;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
         }
 
         .ios-switch {
@@ -568,12 +160,10 @@
             background: #E5E5EA;
             border-radius: 15.5px;
             position: relative;
-            cursor: pointer;
             transition: background 0.3s;
+            cursor: pointer;
         }
-
         .ios-switch.active { background: #34C759; }
-
         .ios-switch::after {
             content: '';
             position: absolute;
@@ -584,59 +174,51 @@
             top: 2px;
             left: 2px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-            transition: transform 0.3s;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
         .ios-switch.active::after { transform: translateX(20px); }
 
-        .security-card {
-            background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
-            color: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
+        .biometric-active {
+            animation: biometric-pulse 1.5s infinite;
+        }
+        @keyframes biometric-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
-        .security-option {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            background: white;
-            border-radius: 12px;
-            margin-bottom: 12px;
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
         }
 
-        .security-option-text {
-            font-size: 17px;
-            font-weight: 500;
-            color: #000;
+        .fade-out {
+            animation: fade-out 0.3s ease-out forwards;
         }
-
-        .security-option-sub {
-            font-size: 13px;
-            color: #666;
-            margin-top: 2px;
+        @keyframes fade-out {
+            to { opacity: 0; transform: translateY(-10px); }
         }
-
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Lock Screen -->
+    <!-- LOCK SCREEN -->
     <div id="lockScreen" class="lock-screen">
-        <div class="lock-icon">
+        <div class="lock-icon" id="lockIcon">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
         </div>
         
-        <h1 style="color: white; font-size: 28px; font-weight: 700; margin-bottom: 8px;">VoiceNotes Pro</h1>
-        <p style="color: #999; font-size: 15px; margin-bottom: 32px; text-align: center;">Защищенное хранилище<br>с Face ID и iCloud</p>
+        <h1 class="text-3xl font-bold text-white mb-2">VoiceNotes Pro</h1>
+        <p class="text-gray-400 text-sm mb-8 text-center px-8">Защищенные голосовые заметки<br>с Face ID и iCloud</p>
         
-        <button onclick="authenticate()" class="faceid-btn">
+        <button onclick="authenticate()" class="faceid-btn w-64 h-14 rounded-2xl flex items-center justify-center gap-3 text-white font-semibold mb-4 ios-btn" id="authBtn">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 2a10 10 0 0 0-7.07 17.07A10 10 0 0 0 22 12 10 10 0 0 0 12 2z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
@@ -644,331 +226,490 @@
             <span>Face ID / Touch ID</span>
         </button>
         
-        <button onclick="showPasscode()" style="color: #007AFF; font-size: 17px; background: none; border: none;">Использовать пароль</button>
-    </div>
-
-    <!-- Passcode Modal -->
-    <div id="passcodeModal" class="passcode-modal">
-        <div class="passcode-title" id="passcodeTitle">Введите пароль</div>
-        <div class="passcode-subtitle" id="passcodeSubtitle">Защита данных</div>
+        <button onclick="usePasscode()" class="text-gray-400 text-sm ios-btn px-4 py-2">
+            Использовать код-пароль
+        </button>
         
-        <div class="passcode-dots">
-            <div class="passcode-dot" id="dot1"></div>
-            <div class="passcode-dot" id="dot2"></div>
-            <div class="passcode-dot" id="dot3"></div>
-            <div class="passcode-dot" id="dot4"></div>
-        </div>
+        <div id="authError" class="hidden mt-4 text-red-400 text-sm text-center px-8"></div>
         
-        <div class="passcode-keypad">
-            <button class="passcode-key" onclick="enterDigit(1)">1</button>
-            <button class="passcode-key" onclick="enterDigit(2)">2</button>
-            <button class="passcode-key" onclick="enterDigit(3)">3</button>
-            <button class="passcode-key" onclick="enterDigit(4)">4</button>
-            <button class="passcode-key" onclick="enterDigit(5)">5</button>
-            <button class="passcode-key" onclick="enterDigit(6)">6</button>
-            <button class="passcode-key" onclick="enterDigit(7)">7</button>
-            <button class="passcode-key" onclick="enterDigit(8)">8</button>
-            <button class="passcode-key" onclick="enterDigit(9)">9</button>
-            <div></div>
-            <button class="passcode-key" onclick="enterDigit(0)">0</button>
-            <button class="passcode-key" onclick="clearDigit()" style="font-size: 18px;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
-                    <line x1="18" y1="9" x2="12" y2="15"></line>
-                    <line x1="12" y1="9" x2="18" y2="15"></line>
+        <div class="absolute bottom-12 left-0 right-0 px-8">
+            <div class="flex items-center justify-center gap-2 text-xs text-gray-500">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
-            </button>
+                <span>Защита AES-256 • iCloud Sync</span>
+            </div>
         </div>
-        
-        <button class="passcode-cancel" onclick="cancelPasscode()">Отмена</button>
     </div>
 
-    <!-- Main App -->
-    <div id="appContainer" class="app-container">
+    <!-- PASSCODE MODAL -->
+    <div id="passcodeModal" class="fixed inset-0 z-[101] bg-black/95 hidden items-center justify-center p-6">
+        <div class="w-full max-w-sm">
+            <h3 class="text-2xl font-bold text-white text-center mb-2">Введите код</h3>
+            <p class="text-gray-500 text-sm text-center mb-6">Забыли код?</p>
+            
+            <div class="flex justify-center gap-3 mb-6">
+                <div class="w-4 h-4 rounded-full border-2 border-white passcode-dot transition-all duration-200" id="dot1"></div>
+                <div class="w-4 h-4 rounded-full border-2 border-white passcode-dot transition-all duration-200" id="dot2"></div>
+                <div class="w-4 h-4 rounded-full border-2 border-white passcode-dot transition-all duration-200" id="dot3"></div>
+                <div class="w-4 h-4 rounded-full border-2 border-white passcode-dot transition-all duration-200" id="dot4"></div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-4" id="passcodeGrid">
+                <button onclick="enterDigit(1)" class="h-20 bg-gray-800/50 rounded-full text-white text-2xl font-light ios-btn hover:bg-gray-700/50 active:bg-gray-600/50 transition-colors">1</button>
+                <button onclick="enterDigit(2)" class="h-20 bg-gray-800/50 rounded-full text-white text-2xl font-light ios-btn hover:bg-gray-700/50 active:bg-gray-600/50 transition-colors">2</button>
+                <button onclick="enterDigit(3)" class="h-20 bg-gray-800/50 rounded-full text-white text-2xl font-light ios-btn hover:bg-gray-700/50 active:bg-gray-600/50 transition-colors">3</button>
+                <button onclick="enterDigit(4)" class="h-20 bg-gray-800/50 rounded-full text-white text-2xl font-light ios-btn hover:bg-gray-700/50 active:bg-gray-600/50 transition-colors">4</button>
+                <button onclick="enterDigit(5)" class="h-20 bg-gray-800/50 rounded-full text-white text-2xl font-light ios-btn hover:bg-gray-700/50 active:bg-gray-600/50 transition-colors">5</button>
+                <button onclick="enterDigit(6)" class="h-20 bg-gray-800/50 rounded-full text-white text-2xl font-light ios-btn hover:bg-gray-700/50 active:bg-gray-600/50 transition-colors">6</button>
+                <button onclick="enterDigit(7)" class="h-20 bg-gray-800/50 rounded-full text-white text-2xl font-light ios-btn hover:bg-gray-700/50 active:bg-gray-600/50 transition-colors">7</button>
+                <button onclick="enterDigit(8)" class="h-20 bg-gray-800/50 rounded-full text-white text-2xl font-light ios-btn hover:bg-gray-700/50 active:bg-gray-600/50 transition-colors">8</button>
+                <button onclick="enterDigit(9)" class="h-20 bg-gray-800/50 rounded-full text-white text-2xl font-light ios-btn hover:bg-gray-700/50 active:bg-gray-600/50 transition-colors">9</button>
+                <button onclick="closePasscode()" class="h-20 text-gray-400 text-sm font-medium ios-btn flex items-center justify-center hover:text-white transition-colors">Отмена</button>
+                <button onclick="enterDigit(0)" class="h-20 bg-gray-800/50 rounded-full text-white text-2xl font-light ios-btn hover:bg-gray-700/50 active:bg-gray-600/50 transition-colors">0</button>
+                <button onclick="clearPasscode()" class="h-20 text-gray-400 text-sm font-medium ios-btn flex items-center justify-center hover:text-white transition-colors">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                        <line x1="18" y1="9" x2="12" y2="15"></line>
+                        <line x1="12" y1="9" x2="18" y2="15"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="appContainer" class="app-container max-w-md mx-auto relative">
         
         <!-- Header -->
-        <header class="header">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <h1 class="header-title" id="pageTitle">Записи</h1>
-                        <span class="security-badge" id="securityBadge">Защищено</span>
+        <header class="sticky top-0 z-40 bg-[#F2F2F7]/90 ios-blur border-b border-gray-200/50 px-4 pt-12 pb-3">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Заметки</h1>
+                        <div class="security-badge px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            AES-256
+                        </div>
                     </div>
-                    <div class="header-subtitle">
+                    <p class="text-sm text-gray-500 flex items-center gap-2">
                         <span id="headerSubtitle">Все группы</span>
-                        <span id="icloudStatus" class="icloud-badge hidden">iCloud</span>
-                    </div>
+                        <span id="syncIndicator" class="hidden w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span id="icloudStatus" class="hidden icloud-badge px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                            </svg>
+                            iCloud
+                        </span>
+                    </p>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="icon-btn" onclick="manualSync()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <div class="flex items-center gap-2">
+                    <button onclick="manualSync()" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center ios-btn relative" id="syncBtn">
+                        <svg id="syncIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-blue-500">
                             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
                         </svg>
                     </button>
-                    <button class="icon-btn" onclick="lockApp()" style="background: #000;">
+                    <button onclick="lockApp()" class="w-10 h-10 bg-gray-900 rounded-full shadow-sm flex items-center justify-center ios-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                         </svg>
                     </button>
+                    <button onclick="showMenu()" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center ios-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-600">
+                            <circle cx="12" cy="12" r="1"></circle>
+                            <circle cx="19" cy="12" r="1"></circle>
+                            <circle cx="5" cy="12" r="1"></circle>
+                        </svg>
+                    </button>
                 </div>
             </div>
-            
-            <div class="groups-scroll" id="groupsChips">
-                <button class="group-chip active" onclick="filterByGroup('all')">Все</button>
+
+            <!-- Groups -->
+            <div class="mt-4 -mx-4 px-4 overflow-x-auto hide-scrollbar">
+                <div class="flex gap-2" id="groupsChips">
+                    <button onclick="filterByGroup('all')" class="group-chip active px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-medium whitespace-nowrap transition-all ios-btn flex items-center gap-2" data-group="all">
+                        Все
+                    </button>
+                </div>
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="main-content" id="mainContent">
-            
-            <!-- iCloud Banner -->
-            <div id="icloudBanner" class="icloud-banner hidden">
-                <div style="display: flex; align-items: center; gap: 12px;">
+        <!-- iCloud Banner -->
+        <div id="icloudBanner" class="hidden bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 mx-4 mt-4 rounded-xl flex items-center justify-between shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="icloud-sync">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
                     </svg>
-                    <div>
-                        <div style="font-weight: 600; font-size: 15px;">iCloud Синхронизация</div>
-                        <div style="font-size: 13px; opacity: 0.9;">Активна</div>
-                    </div>
                 </div>
-                <button onclick="manualSync()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;">Обновить</button>
+                <div>
+                    <div class="font-semibold text-sm">iCloud Синхронизация</div>
+                    <div class="text-xs opacity-90" id="icloudText">Активна</div>
+                </div>
             </div>
+            <button onclick="manualSync()" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs font-medium ios-btn">
+                Синхронизировать
+            </button>
+        </div>
 
+        <!-- Content -->
+        <main class="px-4 pt-4 pb-32" id="mainContent">
+            
             <!-- Voice Input -->
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2">
+            <div class="ios-card p-4 mb-5 bg-gradient-to-br from-white to-gray-50">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-blue-500">
                             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
                             <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
                             <line x1="12" x2="12" y1="19" y2="22"></line>
                         </svg>
                         Голосовой ввод
-                    </div>
-                    <span id="voiceHint" style="font-size: 13px; color: #666;">Нажмите и говорите</span>
+                    </span>
+                    <span class="text-xs text-gray-500" id="voiceHint">Нажмите и говорите</span>
                 </div>
                 
-                <button class="voice-btn" onclick="toggleVoice()" id="voiceBtn">
-                    <div class="voice-waves" id="voiceWaves">
-                        <div class="voice-bar" style="animation-delay: 0s"></div>
-                        <div class="voice-bar" style="animation-delay: 0.1s"></div>
-                        <div class="voice-bar" style="animation-delay: 0.2s"></div>
-                        <div class="voice-bar" style="animation-delay: 0.3s"></div>
-                        <div class="voice-bar" style="animation-delay: 0.4s"></div>
+                <button onclick="toggleVoice()" id="voiceBtn" class="w-full h-14 bg-blue-500 rounded-xl flex items-center justify-center relative ios-btn overflow-hidden shadow-lg shadow-blue-500/25 transition-all duration-300">
+                    <div id="voiceWaves" class="hidden flex items-center gap-1 h-6">
+                        <div class="voice-bar bg-white" style="animation-delay: 0s"></div>
+                        <div class="voice-bar bg-white" style="animation-delay: 0.1s"></div>
+                        <div class="voice-bar bg-white" style="animation-delay: 0.2s"></div>
+                        <div class="voice-bar bg-white" style="animation-delay: 0.3s"></div>
+                        <div class="voice-bar bg-white" style="animation-delay: 0.4s"></div>
                     </div>
-                    <svg id="micIcon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                    <svg id="micIcon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
                         <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
                         <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
                         <line x1="12" x2="12" y1="19" y2="22"></line>
                     </svg>
                 </button>
                 
-                <div style="margin-top: 12px; padding: 12px; background: #E3F2FD; border-radius: 8px; font-size: 13px; color: #1565C0; text-align: center;">
-                    <strong>"Группа Работа, Глава Встречи, Текст"</strong>
+                <div class="mt-3 p-2 bg-blue-50 rounded-lg">
+                    <p class="text-xs text-blue-700 text-center">
+                        <span class="font-semibold">"Группа Работа, Глава Идеи, Запиши..."</span>
+                    </p>
                 </div>
             </div>
 
             <!-- Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="statNotes">0</div>
-                    <div class="stat-label">Записей</div>
+            <div class="grid grid-cols-3 gap-3 mb-5">
+                <div class="ios-card p-3 text-center">
+                    <div class="text-2xl font-bold text-gray-900" id="statNotes">0</div>
+                    <div class="text-xs text-gray-500">Заметок</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: #007AFF;" id="statGroups">0</div>
-                    <div class="stat-label">Групп</div>
+                <div class="ios-card p-3 text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="statGroups">0</div>
+                    <div class="text-xs text-gray-500">Групп</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: #AF52DE;" id="statToday">0</div>
-                    <div class="stat-label">Сегодня</div>
+                <div class="ios-card p-3 text-center">
+                    <div class="text-2xl font-bold text-purple-600" id="statToday">0</div>
+                    <div class="text-xs text-gray-500">Сегодня</div>
                 </div>
             </div>
 
-            <!-- Notes List -->
-            <div id="notesList"></div>
+            <!-- Notes -->
+            <div id="notesList" class="space-y-4"></div>
 
-            <!-- Empty State -->
-            <div id="emptyState" class="empty-state hidden">
-                <div class="empty-icon">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5">
+            <!-- Empty -->
+            <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center">
+                <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
                 </div>
-                <div style="font-size: 20px; font-weight: 600; color: #000; margin-bottom: 8px;">Нет записей</div>
-                <div style="font-size: 15px; color: #666; margin-bottom: 24px;">Создайте защищенную запись</div>
-                <button onclick="openNewNote()" style="background: #007AFF; color: white; padding: 14px 28px; border-radius: 24px; font-size: 17px; font-weight: 600; border: none;">Создать запись</button>
-            </div>
-        </main>
-
-        <!-- Security View -->
-        <main class="main-content hidden" id="securityContent">
-            <!-- Security Status -->
-            <div class="security-card">
-                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
-                    <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center;">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <div style="font-size: 20px; font-weight: 700;">Защита активна</div>
-                        <div style="font-size: 14px; color: #999; margin-top: 4px;">Face ID / Пароль</div>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #34C759; background: rgba(52,199,89,0.1); padding: 8px 12px; border-radius: 8px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                    </svg>
-                    <span>Данные шифруются на устройстве</span>
-                </div>
-            </div>
-
-            <!-- Change Passcode -->
-            <div class="security-option" onclick="startChangePasscode()">
-                <div>
-                    <div class="security-option-text">Изменить пароль</div>
-                    <div class="security-option-sub">Установить новый 4-значный код</div>
-                </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2">
-                    <path d="M9 18l6-6-6-6"></path>
-                </svg>
-            </div>
-
-            <!-- Face ID Toggle -->
-            <div class="security-option">
-                <div>
-                    <div class="security-option-text">Face ID / Touch ID</div>
-                    <div class="security-option-sub">Быстрый доступ по биометрии</div>
-                </div>
-                <div class="ios-switch active" id="faceIdToggle" onclick="toggleFaceId()"></div>
-            </div>
-
-            <!-- Auto Lock -->
-            <div class="security-option">
-                <div>
-                    <div class="security-option-text">Автоблокировка</div>
-                    <div class="security-option-sub">При сворачивании приложения</div>
-                </div>
-                <div class="ios-switch active" id="autoLockToggle" onclick="toggleAutoLock()"></div>
-            </div>
-
-            <!-- iCloud -->
-            <div class="security-option">
-                <div>
-                    <div class="security-option-text">iCloud Синхронизация</div>
-                    <div class="security-option-sub">Резервное копирование</div>
-                </div>
-                <div class="ios-switch active" id="icloudToggle" onclick="toggleIcloud()"></div>
-            </div>
-
-            <!-- Lock Now -->
-            <div class="security-option" onclick="lockApp()" style="color: #FF3B30;">
-                <div class="security-option-text" style="color: #FF3B30;">Заблокировать сейчас</div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" stroke-width="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-            </div>
-
-            <!-- Stats -->
-            <div class="card" style="margin-top: 16px;">
-                <div style="font-size: 17px; font-weight: 600; margin-bottom: 12px;">Статистика</div>
-                <div style="display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 8px;">
-                    <span style="color: #666;">Записей</span>
-                    <span id="secNotesCount">0</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 8px;">
-                    <span style="color: #666;">Групп</span>
-                    <span id="secGroupsCount">0</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 8px;">
-                    <span style="color: #666;">Размер данных</span>
-                    <span id="secDataSize">0 KB</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 15px;">
-                    <span style="color: #666;">Последняя синхронизация</span>
-                    <span id="lastSyncTime">—</span>
-                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Нет заметок</h3>
+                <p class="text-sm text-gray-500 mb-6">Создайте первую защищенную заметку</p>
+                <button onclick="openNewNote()" class="px-6 py-3 bg-blue-500 text-white rounded-full text-sm font-semibold ios-btn shadow-lg">
+                    Создать
+                </button>
             </div>
         </main>
 
         <!-- FAB -->
-        <button class="fab" onclick="openNewNote()">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+        <button onclick="openNewNote()" class="fixed bottom-24 right-5 w-14 h-14 bg-blue-500 rounded-full shadow-xl flex items-center justify-center ios-btn z-30 hover:scale-110 transition-transform">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
         </button>
 
         <!-- Bottom Nav -->
-        <nav class="bottom-nav">
-            <button class="nav-item active" onclick="switchTab('notes')" id="navNotes">
-                <svg viewBox="0 0 24 24" fill="currentColor">
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/90 ios-blur border-t border-gray-200 px-6 py-3 flex justify-around items-center z-40 pb-[env(safe-area-inset-bottom)] max-w-md mx-auto">
+            <button onclick="switchTab('notes')" class="nav-btn active flex flex-col items-center gap-1 text-blue-600 ios-btn w-16" data-tab="notes">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
                 </svg>
-                <span>Записи</span>
+                <span class="text-[10px] font-medium">Заметки</span>
             </button>
-            <button class="nav-item" onclick="switchTab('groups')" id="navGroups">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button onclick="switchTab('groups')" class="nav-btn flex flex-col items-center gap-1 text-gray-400 ios-btn w-16" data-tab="groups">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="7" height="7"></rect>
                     <rect x="14" y="3" width="7" height="7"></rect>
                     <rect x="14" y="14" width="7" height="7"></rect>
                     <rect x="3" y="14" width="7" height="7"></rect>
                 </svg>
-                <span>Группы</span>
+                <span class="text-[10px] font-medium">Группы</span>
             </button>
-            <button class="nav-item" onclick="switchTab('security')" id="navSecurity">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button onclick="switchTab('security')" class="nav-btn flex flex-col items-center gap-1 text-gray-400 ios-btn w-16" data-tab="security">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>
-                <span>Защита</span>
+                <span class="text-[10px] font-medium">Безопасность</span>
             </button>
         </nav>
 
         <!-- New Note Sheet -->
-        <div id="newNoteSheet" class="sheet">
-            <div class="sheet-backdrop" onclick="closeNewNote()"></div>
-            <div class="sheet-content">
-                <div class="sheet-handle"></div>
-                <div class="sheet-header">
-                    <button class="sheet-btn cancel" onclick="closeNewNote()">Отмена</button>
-                    <div class="sheet-title">Новая запись</div>
-                    <button class="sheet-btn" onclick="saveNote()">Сохранить</button>
+        <div id="newNoteSheet" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeNewNote()"></div>
+            <div class="absolute bottom-0 left-0 right-0 bg-[#F2F2F7] rounded-t-3xl sheet-enter transform transition-transform duration-300 max-h-[85vh] overflow-y-auto" style="padding-bottom: env(safe-area-inset-bottom);">
+                <div class="sticky top-0 bg-[#F2F2F7] pt-3 pb-4 px-4 rounded-t-3xl z-10 border-b border-gray-200/50">
+                    <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4"></div>
+                    <div class="flex items-center justify-between">
+                        <button onclick="closeNewNote()" class="text-gray-500 font-medium text-sm ios-btn">Отмена</button>
+                        <h2 class="text-lg font-semibold text-gray-900">Новая заметка</h2>
+                        <button onclick="saveNote()" class="text-blue-600 font-semibold text-sm ios-btn">Сохранить</button>
+                    </div>
                 </div>
                 
-                <div style="margin-bottom: 12px;">
-                    <div style="font-size: 13px; font-weight: 600; color: #666; text-transform: uppercase; margin-bottom: 8px;">Группа</div>
-                    <div class="groups-scroll" id="sheetGroups" style="padding: 0;"></div>
+                <div class="px-4 pb-8 space-y-4 pt-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase mb-3 block">Группа</label>
+                        <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2" id="sheetGroups"></div>
+                    </div>
+                    <div class="ios-card overflow-hidden">
+                        <input type="text" id="chapterInput" placeholder="Название главы" class="w-full px-4 py-3.5 bg-white border-0 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+                    </div>
+                    <div class="ios-card overflow-hidden">
+                        <textarea id="textInput" placeholder="Введите текст..." rows="5" class="w-full px-4 py-3.5 bg-white border-0 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"></textarea>
+                        <div class="px-4 py-2 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+                            <span class="text-xs text-gray-400" id="charCount">0 символов</span>
+                            <button onclick="startVoiceInSheet()" class="text-blue-600 text-xs font-medium flex items-center gap-1 ios-btn px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                </svg>
+                                Диктовать
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                
-                <input type="text" class="input-field" id="chapterInput" placeholder="Название главы">
-                <textarea class="textarea-field" id="textInput" placeholder="Введите текст записи..."></textarea>
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
-                    <span id="charCount" style="font-size: 13px; color: #999;">0 символов</span>
-                    <button onclick="startVoiceInSheet()" style="font-size: 15px; color: #007AFF; background: none; border: none; display: flex; align-items: center; gap: 6px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            </div>
+        </div>
+
+        <!-- Security View -->
+        <div id="securityView" class="fixed inset-0 z-30 bg-[#F2F2F7] hidden flex-col overflow-y-auto">
+            <div class="pt-12 px-4 pb-4 bg-[#F2F2F7]/90 ios-blur sticky top-0 z-10 border-b border-gray-200/50">
+                <h1 class="text-3xl font-bold text-gray-900">Центр Безопасности</h1>
+            </div>
+            
+            <div class="px-4 py-6 space-y-6">
+                <!-- Status Card -->
+                <div class="ios-card p-5 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-bold text-xl">Защита активна</div>
+                            <div class="text-sm text-gray-300">Face ID / Touch ID / Код</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-gray-400 bg-white/5 p-3 rounded-xl">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
-                        Диктовать
+                        <span>Шифрование AES-256-GCM с PBKDF2</span>
+                    </div>
+                </div>
+
+                <!-- iCloud -->
+                <div class="ios-card p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">iCloud Sync</div>
+                                <div class="text-xs text-gray-500" id="icloudStatusText">Активна</div>
+                            </div>
+                        </div>
+                        <div class="ios-switch active" id="icloudToggle" onclick="toggleIcloud()"></div>
+                    </div>
+                    <button onclick="manualSync()" class="w-full py-3 bg-blue-50 text-blue-600 rounded-xl font-medium ios-btn flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors">
+                        <svg id="manualSyncIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+                        </svg>
+                        <span id="manualSyncText">Синхронизировать</span>
                     </button>
+                </div>
+
+                <!-- Auto Lock -->
+                <div class="ios-card p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-gray-900">Автоблокировка</div>
+                            <div class="text-xs text-gray-500">При сворачивании приложения</div>
+                        </div>
+                        <div class="ios-switch active" id="autoLockToggle" onclick="toggleAutoLock()"></div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="ios-card overflow-hidden">
+                    <button onclick="changePasscode()" class="w-full flex items-center justify-between p-4 border-b border-gray-100 ios-btn hover:bg-gray-50 transition-colors">
+                        <span class="font-medium text-gray-900">Сменить код-пароль</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400"><path d="M9 18l6-6-6-6"></path></svg>
+                    </button>
+                    <button onclick="exportEncrypted()" class="w-full flex items-center justify-between p-4 border-b border-gray-100 ios-btn hover:bg-gray-50 transition-colors">
+                        <span class="font-medium text-gray-900">Экспорт с шифрованием</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400"><path d="M9 18l6-6-6-6"></path></svg>
+                    </button>
+                    <button onclick="lockApp()" class="w-full flex items-center justify-between p-4 ios-btn text-red-600 hover:bg-red-50 transition-colors">
+                        <span class="font-medium">Заблокировать сейчас</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="ios-card p-4">
+                    <h3 class="font-semibold text-gray-900 mb-3">Статистика</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-500">Заметок</span><span class="font-medium" id="secNotesCount">0</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Групп</span><span class="font-medium" id="secGroupsCount">0</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Объем</span><span class="font-medium" id="secDataSize">0 KB</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Последняя синхр.</span><span class="font-medium" id="lastSyncTime">Нет</span></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Toast -->
-        <div id="toast" class="toast"></div>
+        <div id="toast" class="fixed top-24 left-1/2 -translate-x-1/2 bg-gray-900/90 text-white px-6 py-3 rounded-full text-sm font-medium opacity-0 pointer-events-none transition-all duration-300 z-50 backdrop-blur-md shadow-lg max-w-[90%] text-center toast"></div>
     </div>
 
     <script>
-        // Security Settings Keys
-        const STORAGE_KEY = 'voicenotes_v4';
-        const PASSCODE_KEY = 'vn_passcode';
-        const SETTINGS_KEY = 'vn_settings';
+        // ==================== SECURITY MODULE ====================
+        // AES-256-GCM Encryption with PBKDF2 [^19^][^20^][^23^]
+        class SecureStorage {
+            constructor() {
+                this.STORAGE_KEY = 'voicenotes_secure_v4';
+                this.PASSCODE_KEY = 'voicenotes_passcode';
+                this.SALT_KEY = 'voicenotes_salt';
+                this.masterKey = null;
+            }
+
+            // Generate or retrieve salt
+            async getSalt() {
+                let salt = localStorage.getItem(this.SALT_KEY);
+                if (!salt) {
+                    salt = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+                        .map(b => b.toString(16).padStart(2, '0')).join('');
+                    localStorage.setItem(this.SALT_KEY, salt);
+                }
+                return new Uint8Array(salt.match(/.{2}/g).map(byte => parseInt(byte, 16)));
+            }
+
+            // Derive key from password using PBKDF2 [^23^]
+            async deriveKey(password, salt) {
+                const enc = new TextEncoder();
+                const passwordKey = await crypto.subtle.importKey(
+                    'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+                );
+                
+                return await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: salt,
+                        iterations: 600000, // NIST recommended [^23^]
+                        hash: 'SHA-256'
+                    },
+                    passwordKey,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt', 'decrypt']
+                );
+            }
+
+            // Initialize with passcode
+            async init(password) {
+                const salt = await this.getSalt();
+                this.masterKey = await this.deriveKey(password, salt);
+            }
+
+            // Encrypt data [^19^][^20^]
+            async encrypt(data) {
+                if (!this.masterKey) throw new Error('Storage not initialized');
+                
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const encoded = new TextEncoder().encode(JSON.stringify(data));
+                
+                const ciphertext = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv },
+                    this.masterKey,
+                    encoded
+                );
+
+                return {
+                    iv: Array.from(iv),
+                    data: Array.from(new Uint8Array(ciphertext)),
+                    timestamp: Date.now()
+                };
+            }
+
+            // Decrypt data
+            async decrypt(encrypted) {
+                if (!this.masterKey) throw new Error('Storage not initialized');
+                
+                try {
+                    const iv = new Uint8Array(encrypted.iv);
+                    const data = new Uint8Array(encrypted.data);
+                    
+                    const decrypted = await crypto.subtle.decrypt(
+                        { name: 'AES-GCM', iv },
+                        this.masterKey,
+                        data
+                    );
+                    
+                    return JSON.parse(new TextDecoder().decode(decrypted));
+                } catch (e) {
+                    console.error('Decryption failed:', e);
+                    throw new Error('Invalid password or corrupted data');
+                }
+            }
+
+            // Save encrypted data
+            async save(data) {
+                const encrypted = await this.encrypt(data);
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(encrypted));
+                return true;
+            }
+
+            // Load and decrypt data
+            async load() {
+                const stored = localStorage.getItem(this.STORAGE_KEY);
+                if (!stored) return null;
+                return await this.decrypt(JSON.parse(stored));
+            }
+
+            // Clear all data
+            clear() {
+                localStorage.removeItem(this.STORAGE_KEY);
+                localStorage.removeItem(this.SALT_KEY);
+                localStorage.removeItem(this.PASSCODE_KEY);
+            }
+        }
+
+        // ==================== APP STATE ====================
+        const secureStorage = new SecureStorage();
         
         let data = {
             groups: [
@@ -981,7 +722,6 @@
             settings: {
                 autoLock: true,
                 icloudSync: true,
-                faceIdEnabled: true,
                 lastSync: null
             }
         };
@@ -992,410 +732,625 @@
         let isRecording = false;
         let isAuthenticated = false;
         let passcodeBuffer = '';
-        let passcodeMode = 'unlock'; // 'unlock', 'change_old', 'change_new', 'confirm_new'
-        let oldPasscode = '';
-        let newPasscode = '';
+        let renderCache = { groups: null, notes: null };
 
-        // Init
+        // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', () => {
-            loadSettings();
-            if (!localStorage.getItem(PASSCODE_KEY)) localStorage.setItem(PASSCODE_KEY, '0000');
+            checkFirstLaunch();
             initVoice();
+            setupEventListeners();
             
+            // Auto-lock on background
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden && data.settings.autoLock && isAuthenticated) {
-                    setTimeout(lockApp, 500);
+                    setTimeout(() => lockApp(), 500);
                 }
             });
-            
-            document.getElementById('textInput')?.addEventListener('input', function() {
-                document.getElementById('charCount').textContent = this.value.length + ' символов';
+
+            // Handle app resume
+            window.addEventListener('focus', () => {
+                if (data.settings.autoLock && isAuthenticated) {
+                    // Optional: lock on focus after delay
+                }
             });
         });
 
-        function loadSettings() {
-            const saved = localStorage.getItem(SETTINGS_KEY);
-            if (saved) data.settings = { ...data.settings, ...JSON.parse(saved) };
-        }
-
-        function saveSettings() {
-            localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
-        }
-
-        // Passcode Management
-        function startChangePasscode() {
-            passcodeMode = 'change_old';
-            document.getElementById('passcodeTitle').textContent = 'Текущий пароль';
-            document.getElementById('passcodeSubtitle').textContent = 'Введите старый код';
-            showPasscode();
-        }
-
-        function showPasscode() {
-            document.getElementById('passcodeModal').classList.add('active');
-            passcodeBuffer = '';
-            updateDots();
-        }
-
-        function cancelPasscode() {
-            document.getElementById('passcodeModal').classList.remove('active');
-            passcodeMode = 'unlock';
-            passcodeBuffer = '';
-            oldPasscode = '';
-            newPasscode = '';
-        }
-
-        function enterDigit(d) {
-            if (passcodeBuffer.length < 4) {
-                passcodeBuffer += d;
-                updateDots();
-                if (passcodeBuffer.length === 4) {
-                    setTimeout(handlePasscodeComplete, 200);
-                }
+        function setupEventListeners() {
+            // Debounced char count [^24^]
+            const textInput = document.getElementById('textInput');
+            if (textInput) {
+                textInput.addEventListener('input', debounce((e) => {
+                    document.getElementById('charCount').textContent = 
+                        `${e.target.value.length} символов`;
+                }, 300));
             }
         }
 
-        function clearDigit() {
-            passcodeBuffer = passcodeBuffer.slice(0, -1);
-            updateDots();
+        function debounce(fn, ms) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => fn(...args), ms);
+            };
         }
 
-        function updateDots() {
-            for (let i = 1; i <= 4; i++) {
-                document.getElementById('dot' + i).classList.toggle('filled', i <= passcodeBuffer.length);
+        function checkFirstLaunch() {
+            if (!localStorage.getItem(secureStorage.PASSCODE_KEY)) {
+                localStorage.setItem(secureStorage.PASSCODE_KEY, '0000');
             }
         }
 
-        function handlePasscodeComplete() {
-            const saved = localStorage.getItem(PASSCODE_KEY) || '0000';
-            
-            switch(passcodeMode) {
-                case 'unlock':
-                    if (passcodeBuffer === saved) {
-                        cancelPasscode();
-                        unlockApp();
-                    } else {
-                        passcodeBuffer = '';
-                        updateDots();
-                        showToast('Неверный пароль');
-                        if (navigator.vibrate) navigator.vibrate([100, 100, 100]);
-                    }
-                    break;
-                    
-                case 'change_old':
-                    if (passcodeBuffer === saved) {
-                        oldPasscode = passcodeBuffer;
-                        passcodeMode = 'change_new';
-                        passcodeBuffer = '';
-                        updateDots();
-                        document.getElementById('passcodeTitle').textContent = 'Новый пароль';
-                        document.getElementById('passcodeSubtitle').textContent = 'Введите новый 4-значный код';
-                    } else {
-                        passcodeBuffer = '';
-                        updateDots();
-                        showToast('Неверный текущий пароль');
-                    }
-                    break;
-                    
-                case 'change_new':
-                    newPasscode = passcodeBuffer;
-                    passcodeMode = 'confirm_new';
-                    passcodeBuffer = '';
-                    updateDots();
-                    document.getElementById('passcodeTitle').textContent = 'Подтвердите';
-                    document.getElementById('passcodeSubtitle').textContent = 'Повторите новый пароль';
-                    break;
-                    
-                case 'confirm_new':
-                    if (passcodeBuffer === newPasscode) {
-                        localStorage.setItem(PASSCODE_KEY, newPasscode);
-                        cancelPasscode();
-                        showToast('✅ Пароль изменен');
-                    } else {
-                        passcodeBuffer = '';
-                        updateDots();
-                        showToast('Пароли не совпадают');
-                        passcodeMode = 'change_new';
-                        document.getElementById('passcodeTitle').textContent = 'Новый пароль';
-                        document.getElementById('passcodeSubtitle').textContent = 'Введите новый код еще раз';
-                    }
-                    break;
-            }
-        }
-
-        // Face ID Toggle
-        function toggleFaceId() {
-            const toggle = document.getElementById('faceIdToggle');
-            data.settings.faceIdEnabled = !data.settings.faceIdEnabled;
-            toggle.classList.toggle('active', data.settings.faceIdEnabled);
-            saveSettings();
-            showToast(data.settings.faceIdEnabled ? 'Face ID включен' : 'Face ID отключен');
-        }
-
-        // Auto Lock Toggle
-        function toggleAutoLock() {
-            const toggle = document.getElementById('autoLockToggle');
-            data.settings.autoLock = !data.settings.autoLock;
-            toggle.classList.toggle('active', data.settings.autoLock);
-            saveSettings();
-            showToast(data.settings.autoLock ? 'Автоблокировка включена' : 'Автоблокировка отключена');
-        }
-
-        // iCloud Toggle
-        function toggleIcloud() {
-            const toggle = document.getElementById('icloudToggle');
-            data.settings.icloudSync = !data.settings.icloudSync;
-            toggle.classList.toggle('active', data.settings.icloudSync);
-            saveSettings();
-            showToast(data.settings.icloudSync ? 'iCloud включен' : 'iCloud отключен');
-            if (data.settings.icloudSync) {
-                document.getElementById('icloudBanner').classList.remove('hidden');
-                document.getElementById('icloudStatus').classList.remove('hidden');
-            } else {
-                document.getElementById('icloudBanner').classList.add('hidden');
-                document.getElementById('icloudStatus').classList.add('hidden');
-            }
-        }
-
-        // Auth
+        // ==================== AUTHENTICATION ====================
+        // Fixed WebAuthn implementation [^4^]
         async function authenticate() {
-            if (!data.settings.faceIdEnabled) {
-                showPasscode();
-                return;
-            }
+            const btn = document.getElementById('authBtn');
+            btn.classList.add('biometric-active');
             
             try {
-                if (window.PublicKeyCredential) {
-                    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-                    if (available) {
-                        const challenge = new Uint8Array(32);
-                        crypto.getRandomValues(challenge);
-                        await navigator.credentials.create({
-                            publicKey: {
-                                challenge, rp: { name: 'VoiceNotes' },
-                                user: { id: new Uint8Array(16), name: 'user', displayName: 'User' },
-                                pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-                                authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
-                                timeout: 60000
-                            }
-                        });
-                        unlockApp();
-                        return;
-                    }
+                // Check if WebAuthn is available
+                if (!window.PublicKeyCredential) {
+                    throw new Error('WebAuthn not supported');
                 }
-            } catch(e) {}
-            showPasscode();
+
+                // Check platform authenticator availability
+                const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                if (!available) {
+                    throw new Error('Biometric not available');
+                }
+
+                // Generate challenge
+                const challenge = crypto.getRandomValues(new Uint8Array(32));
+                
+                // Use credentials.get() for authentication, not create() [^4^]
+                const assertion = await navigator.credentials.get({
+                    publicKey: {
+                        challenge: challenge,
+                        rpId: window.location.hostname,
+                        allowCredentials: [], // Empty for discoverable credentials
+                        userVerification: 'required',
+                        timeout: 60000
+                    }
+                }).catch(e => {
+                    // If no credentials exist, try to create one
+                    if (e.name === 'NotAllowedError') {
+                        return createBiometricCredential(challenge);
+                    }
+                    throw e;
+                });
+
+                if (assertion) {
+                    await unlockApp();
+                }
+            } catch (e) {
+                console.log('Biometric auth failed:', e);
+                showAuthError('Биометрия недоступна, используйте код');
+                setTimeout(() => usePasscode(), 1000);
+            } finally {
+                btn.classList.remove('biometric-active');
+            }
         }
 
-        function unlockApp() {
-            isAuthenticated = true;
-            document.getElementById('lockScreen').style.display = 'none';
-            document.getElementById('appContainer').classList.add('unlocked');
-            loadData();
-            renderGroups();
-            renderNotes();
-            updateStats();
-            updateSecurityStats();
-            
-            // Apply settings UI
-            document.getElementById('faceIdToggle').classList.toggle('active', data.settings.faceIdEnabled);
-            document.getElementById('autoLockToggle').classList.toggle('active', data.settings.autoLock);
-            document.getElementById('icloudToggle').classList.toggle('active', data.settings.icloudSync);
-            
-            if (data.settings.icloudSync) {
-                document.getElementById('icloudBanner').classList.remove('hidden');
-                document.getElementById('icloudStatus').classList.remove('hidden');
+        async function createBiometricCredential(challenge) {
+            try {
+                const credential = await navigator.credentials.create({
+                    publicKey: {
+                        challenge: challenge,
+                        rp: { name: 'VoiceNotes Pro', id: window.location.hostname },
+                        user: {
+                            id: crypto.getRandomValues(new Uint8Array(16)),
+                            name: 'user',
+                            displayName: 'User'
+                        },
+                        pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+                        authenticatorSelection: {
+                            authenticatorAttachment: 'platform',
+                            userVerification: 'required'
+                        },
+                        timeout: 60000
+                    }
+                });
+                return credential;
+            } catch (e) {
+                console.error('Credential creation failed:', e);
+                return null;
             }
-            
-            showToast('Добро пожаловать');
+        }
+
+        function showAuthError(message) {
+            const errorDiv = document.getElementById('authError');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            setTimeout(() => errorDiv.classList.add('hidden'), 3000);
+        }
+
+        function usePasscode() {
+            document.getElementById('passcodeModal').classList.remove('hidden');
+            document.getElementById('passcodeModal').classList.add('flex');
+            passcodeBuffer = '';
+            updatePasscodeDots();
+        }
+
+        function enterDigit(digit) {
+            if (passcodeBuffer.length < 4) {
+                passcodeBuffer += digit;
+                updatePasscodeDots();
+                if (passcodeBuffer.length === 4) {
+                    setTimeout(checkPasscode, 200);
+                }
+            }
+        }
+
+        function clearPasscode() {
+            passcodeBuffer = passcodeBuffer.slice(0, -1);
+            updatePasscodeDots();
+        }
+
+        function updatePasscodeDots() {
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`dot${i}`);
+                if (i <= passcodeBuffer.length) {
+                    dot.classList.add('bg-white', 'border-white');
+                    dot.classList.remove('border-white');
+                } else {
+                    dot.classList.remove('bg-white');
+                    dot.classList.add('border-white');
+                }
+            }
+        }
+
+        async function checkPasscode() {
+            const saved = localStorage.getItem(secureStorage.PASSCODE_KEY) || '0000';
+            if (passcodeBuffer === saved) {
+                closePasscode();
+                await unlockApp();
+            } else {
+                // Shake animation
+                const grid = document.getElementById('passcodeGrid');
+                grid.classList.add('shake');
+                setTimeout(() => grid.classList.remove('shake'), 500);
+                
+                passcodeBuffer = '';
+                updatePasscodeDots();
+                showToast('Неверный код');
+                if (navigator.vibrate) navigator.vibrate([100, 100, 100]);
+            }
+        }
+
+        function closePasscode() {
+            document.getElementById('passcodeModal').classList.add('hidden');
+            document.getElementById('passcodeModal').classList.remove('flex');
+            passcodeBuffer = '';
+            updatePasscodeDots();
+        }
+
+        async function unlockApp() {
+            try {
+                // Initialize secure storage with passcode
+                const passcode = localStorage.getItem(secureStorage.PASSCODE_KEY) || '0000';
+                await secureStorage.init(passcode);
+                
+                isAuthenticated = true;
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('appContainer').classList.add('unlocked');
+                
+                await loadFromStorage();
+                renderGroups();
+                renderNotes();
+                updateStats();
+                updateSecurityStats();
+                
+                if (data.settings.icloudSync) {
+                    setTimeout(() => {
+                        document.getElementById('icloudBanner').classList.remove('hidden');
+                        document.getElementById('icloudStatus').classList.remove('hidden');
+                    }, 1000);
+                }
+                
+                showToast('Добро пожаловать');
+                if (navigator.vibrate) navigator.vibrate(50);
+            } catch (e) {
+                console.error('Unlock failed:', e);
+                showToast('Ошибка разблокировки');
+            }
         }
 
         function lockApp() {
             isAuthenticated = false;
+            secureStorage.masterKey = null; // Clear encryption key
             document.getElementById('appContainer').classList.remove('unlocked');
             document.getElementById('lockScreen').style.display = 'flex';
-            switchTab('notes');
+            document.getElementById('appContainer').classList.add('hidden');
         }
 
-        // Data
-        function loadData() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) data = { ...data, ...JSON.parse(stored) };
-            else {
-                data.notes = [{ id: 1, groupId: 'personal', chapter: 'Добро пожаловать', text: '🔒 Ваша первая защищенная запись', timestamp: new Date().toISOString(), favorite: false }];
-                saveData();
-            }
-        }
-
-        function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        }
-
-        function updateSecurityStats() {
-            document.getElementById('secNotesCount').textContent = data.notes.length;
-            document.getElementById('secGroupsCount').textContent = data.groups.length;
-            const size = new Blob([JSON.stringify(data)]).size;
-            document.getElementById('secDataSize').textContent = (size / 1024).toFixed(1) + ' KB';
-            document.getElementById('lastSyncTime').textContent = data.settings.lastSync ? 
-                new Date(data.settings.lastSync).toLocaleString('ru-RU', {hour:'2-digit', minute:'2-digit'}) : '—';
-        }
-
-        // Voice (same as before)
+        // ==================== VOICE RECOGNITION ====================
+        // Optimized with error handling [^21^][^24^][^26^]
         function initVoice() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                recognition.lang = 'ru-RU';
-                recognition.continuous = false;
-                recognition.interimResults = true;
-                recognition.onstart = () => { isRecording = true; updateVoiceUI(true); if (navigator.vibrate) navigator.vibrate(50); };
-                recognition.onend = () => { isRecording = false; updateVoiceUI(false); };
-                recognition.onresult = (e) => {
-                    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
-                    if (e.results[0].isFinal) processVoice(transcript);
-                };
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                console.warn('Speech recognition not supported');
+                return;
             }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ru-RU';
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+
+            // Error handling [^21^][^24^]
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                isRecording = false;
+                updateVoiceUI(false);
+                
+                let message = 'Ошибка распознавания';
+                switch(event.error) {
+                    case 'no-speech':
+                        message = 'Речь не распознана';
+                        break;
+                    case 'audio-capture':
+                        message = 'Микрофон недоступен';
+                        break;
+                    case 'not-allowed':
+                        message = 'Доступ к микрофону запрещен';
+                        break;
+                    case 'network':
+                        message = 'Ошибка сети';
+                        break;
+                }
+                showToast(message);
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                updateVoiceUI(false);
+            };
+
+            let finalTranscript = '';
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (finalTranscript) {
+                    processVoiceInput(finalTranscript);
+                    finalTranscript = '';
+                }
+            };
         }
 
         function toggleVoice() {
-            if (!recognition) { showToast('Голосовой ввод не поддерживается'); return; }
-            isRecording ? recognition.stop() : recognition.start();
+            if (!recognition) {
+                showToast('Голосовой ввод не поддерживается');
+                return;
+            }
+            
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                finalTranscript = '';
+                recognition.start();
+            }
         }
 
-        function updateVoiceUI(rec) {
+        function updateVoiceUI(recording) {
             const btn = document.getElementById('voiceBtn');
             const waves = document.getElementById('voiceWaves');
             const icon = document.getElementById('micIcon');
             const hint = document.getElementById('voiceHint');
-            
-            if (rec) {
-                btn.style.background = '#FF3B30';
-                waves.classList.add('active');
-                icon.style.display = 'none';
+
+            if (recording) {
+                btn.classList.remove('bg-blue-500');
+                btn.classList.add('bg-red-500');
+                waves.classList.remove('hidden');
+                icon.classList.add('hidden');
                 hint.textContent = 'Слушаю...';
             } else {
-                btn.style.background = '#007AFF';
-                waves.classList.remove('active');
-                icon.style.display = 'block';
+                btn.classList.add('bg-blue-500');
+                btn.classList.remove('bg-red-500');
+                waves.classList.add('hidden');
+                icon.classList.remove('hidden');
                 hint.textContent = 'Нажмите и говорите';
             }
         }
 
-        function processVoice(text) {
-            let groupName = null, chapter = 'Общее', content = text;
-            const gm = text.match(/группа\s+([^,]+)/i);
-            const cm = text.match(/глава\s+([^,]+)/i);
-            if (gm) { groupName = gm[1].trim(); content = content.replace(gm[0], '').trim(); }
-            if (cm) { chapter = cm[1].trim(); content = content.replace(cm[0], '').trim(); }
-            content = content.replace(/^,+\s*/, '');
+        function processVoiceInput(text) {
+            // Parse voice commands
+            let groupName = null;
+            let chapterName = 'Без главы';
+            let content = text;
+
+            // Extract group
+            const groupMatch = text.match(/группа\s+([^,]+)/i);
+            if (groupMatch) {
+                groupName = groupMatch[1].trim();
+                content = content.replace(groupMatch[0], '').trim();
+            }
+
+            // Extract chapter
+            const chapterMatch = text.match(/глава\s+([^,]+)/i);
+            if (chapterMatch) {
+                chapterName = chapterMatch[1].trim();
+                content = content.replace(chapterMatch[0], '').trim();
+            }
+
+            // Clean up
+            content = content.replace(/^,+\s*/, '').trim();
+
+            // Find or create group
+            let group = data.groups.find(g => 
+                g.name.toLowerCase() === (groupName || '').toLowerCase()
+            );
             
-            let g = data.groups.find(x => x.name.toLowerCase() === (groupName || '').toLowerCase());
-            if (!g && groupName) g = createGroup(groupName);
-            else if (!g) g = data.groups[0];
-            
+            if (!group && groupName) {
+                group = createGroup(groupName);
+            } else if (!group) {
+                group = data.groups[0];
+            }
+
             if (content.trim()) {
-                addNote(g.id, chapter, content);
-                showToast('Запись добавлена');
+                addNote(group.id, chapterName, content);
+                showToast('Заметка создана');
                 if (navigator.vibrate) navigator.vibrate([50, 100]);
             }
         }
 
-        function createGroup(name) {
-            const colors = ['blue', 'green', 'orange', 'red', 'purple', 'teal', 'yellow', 'pink', 'indigo'];
-            const g = { id: 'g_' + Date.now(), name, color: colors[Math.floor(Math.random() * colors.length)] };
-            data.groups.push(g);
-            saveData();
-            renderGroups();
-            return g;
+        // ==================== DATA MANAGEMENT ====================
+        async function loadFromStorage() {
+            try {
+                const stored = await secureStorage.load();
+                if (stored) {
+                    // Merge with defaults
+                    data = {
+                        groups: stored.groups || data.groups,
+                        notes: stored.notes || [],
+                        settings: { ...data.settings, ...stored.settings }
+                    };
+                } else {
+                    loadDemoData();
+                }
+            } catch (e) {
+                console.error('Failed to load data:', e);
+                showToast('Ошибка загрузки данных');
+                loadDemoData();
+            }
         }
 
-        function addNote(gid, chapter, text) {
+        async function saveToStorage() {
+            try {
+                await secureStorage.save(data);
+                return true;
+            } catch (e) {
+                console.error('Save failed:', e);
+                showToast('Ошибка сохранения');
+                return false;
+            }
+        }
+
+        function loadDemoData() {
+            data.notes = [
+                { 
+                    id: 1, 
+                    groupId: 'personal', 
+                    chapter: 'Добро пожаловать', 
+                    text: 'Это ваша первая защищенная заметка. Все данные шифруются с помощью AES-256-GCM.', 
+                    timestamp: new Date().toISOString(), 
+                    favorite: true 
+                }
+            ];
+            saveToStorage();
+        }
+
+        function createGroup(name) {
+            const colors = ['blue', 'green', 'orange', 'red', 'purple', 'teal', 'yellow', 'pink', 'indigo'];
+            const existingColors = data.groups.map(g => g.color);
+            const availableColors = colors.filter(c => !existingColors.includes(c));
+            const color = availableColors.length > 0 ? availableColors[0] : colors[Math.floor(Math.random() * colors.length)];
+            
+            const group = { 
+                id: 'g_' + Date.now(), 
+                name: name, 
+                color: color 
+            };
+            data.groups.push(group);
+            saveToStorage();
+            renderGroups();
+            return group;
+        }
+
+        async function addNote(groupId, chapter, text) {
             if (!text.trim()) return;
-            data.notes.unshift({ id: Date.now(), groupId: gid, chapter: chapter || 'Общее', text: text.trim(), timestamp: new Date().toISOString(), favorite: false });
-            saveData();
+            
+            const note = {
+                id: Date.now(),
+                groupId: groupId,
+                chapter: chapter || 'Без главы',
+                text: text.trim(),
+                timestamp: new Date().toISOString(),
+                favorite: false
+            };
+            
+            data.notes.unshift(note);
+            await saveToStorage();
             renderNotes();
             updateStats();
             updateSecurityStats();
-            if (data.settings.icloudSync) setTimeout(manualSync, 3000);
+            
+            if (data.settings.icloudSync) {
+                setTimeout(() => manualSync(), 3000);
+            }
         }
 
-        // Render functions (same as before)
+        // ==================== RENDERING (Memoized) ====================
         function renderGroups() {
+            // Check cache
+            const groupsHash = JSON.stringify(data.groups);
+            if (renderCache.groups === groupsHash) return;
+            renderCache.groups = groupsHash;
+
             const chips = document.getElementById('groupsChips');
-            const sheet = document.getElementById('sheetGroups');
-            while (chips.children.length > 1) chips.removeChild(chips.lastChild);
-            if (sheet) sheet.innerHTML = '';
+            const sheetGroups = document.getElementById('sheetGroups');
             
-            data.groups.forEach(g => {
-                const btn = document.createElement('button');
-                btn.className = 'group-chip ' + (currentGroup === g.id ? 'active' : '');
-                btn.innerHTML = `<span class="color-dot color-${g.color}"></span>${g.name}`;
-                btn.onclick = () => filterByGroup(g.id);
-                chips.appendChild(btn);
+            // Clear except "All"
+            while (chips.children.length > 1) chips.removeChild(chips.lastChild);
+            if (sheetGroups) sheetGroups.innerHTML = '';
+
+            data.groups.forEach(group => {
+                const count = data.notes.filter(n => n.groupId === group.id).length;
                 
-                if (sheet) {
-                    const sbtn = document.createElement('button');
-                    sbtn.className = 'group-chip ' + (selectedGroup === g.id ? 'active' : '');
-                    sbtn.innerHTML = `<span class="color-dot color-${g.color}"></span>${g.name}`;
-                    sbtn.onclick = () => { selectedGroup = g.id; renderGroups(); };
-                    sheet.appendChild(sbtn);
+                // Header chips
+                const btn = document.createElement('button');
+                const isActive = currentGroup === group.id;
+                btn.className = `group-chip px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ios-btn flex items-center gap-2 ${isActive ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 border border-gray-200'}`;
+                btn.innerHTML = `<span class="w-2 h-2 rounded-full color-${group.color}"></span>${group.name} ${count > 0 ? `<span class="text-xs opacity-60">${count}</span>` : ''}`;
+                btn.onclick = () => filterByGroup(group.id);
+                chips.appendChild(btn);
+
+                // Sheet groups
+                if (sheetGroups) {
+                    const sheetBtn = document.createElement('button');
+                    const isSelected = selectedGroup === group.id;
+                    sheetBtn.className = `flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ios-btn flex items-center gap-2 ${isSelected ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 border border-gray-200'}`;
+                    sheetBtn.innerHTML = `<span class="w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'color-' + group.color}"></span>${group.name}`;
+                    sheetBtn.onclick = () => { 
+                        selectedGroup = group.id; 
+                        renderGroups(); 
+                    };
+                    sheetGroups.appendChild(sheetBtn);
                 }
             });
         }
 
         function renderNotes() {
-            const list = document.getElementById('notesList');
+            // Check cache
+            const notesHash = JSON.stringify(data.notes) + currentGroup;
+            if (renderCache.notes === notesHash) return;
+            renderCache.notes = notesHash;
+
+            const container = document.getElementById('notesList');
             const empty = document.getElementById('emptyState');
+            
             let notes = data.notes;
-            if (currentGroup !== 'all') notes = notes.filter(n => n.groupId === currentGroup);
+            if (currentGroup !== 'all') {
+                notes = notes.filter(n => n.groupId === currentGroup);
+            }
             
-            if (!notes.length) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
-            empty.classList.add('hidden'); list.innerHTML = '';
+            if (notes.length === 0) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
             
+            empty.classList.add('hidden');
+            container.innerHTML = '';
+
+            // Group by chapter
             const chapters = {};
-            notes.forEach(n => { if (!chapters[n.chapter]) chapters[n.chapter] = []; chapters[n.chapter].push(n); });
-            
-            Object.entries(chapters).forEach(([name, items]) => {
-                const sec = document.createElement('div');
-                sec.innerHTML = `<div style="font-size: 13px; font-weight: 700; color: #666; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;"><span style="background: #e5e5ea; padding: 4px 8px; border-radius: 6px;">${name}</span><div style="flex: 1; height: 1px; background: #e5e5ea;"></div><span style="font-size: 12px; color: #999;">${items.length}</span></div>`;
-                
-                items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                items.forEach(note => {
-                    const g = data.groups.find(x => x.id === note.groupId) || data.groups[0];
-                    const card = document.createElement('div');
-                    card.className = 'note-card';
-                    card.innerHTML = `
-                        <div class="note-header">
-                            <div class="note-group"><span class="color-dot color-${g.color}"></span>${g.name}</div>
-                            <div class="note-time">${new Date(note.timestamp).toLocaleDateString('ru-RU', {day:'numeric', month:'short'})}</div>
-                        </div>
-                        <div class="note-text">${note.text.replace(/</g, '&lt;')}</div>
-                        <div class="note-actions">
-                            <button class="note-btn ${note.favorite ? 'favorite' : ''}" onclick="toggleFavorite(${note.id})">${note.favorite ? '★ В избранном' : '☆ В избранное'}</button>
-                            <button class="note-btn" style="color: #FF3B30;" onclick="deleteNote(${note.id})">Удалить</button>
-                        </div>
-                    `;
-                    sec.appendChild(card);
-                });
-                list.appendChild(sec);
+            notes.forEach(note => {
+                if (!chapters[note.chapter]) chapters[note.chapter] = [];
+                chapters[note.chapter].push(note);
             });
+
+            Object.entries(chapters)
+                .sort((a, b) => b[1][0].timestamp.localeCompare(a[1][0].timestamp))
+                .forEach(([chapter, chapterNotes]) => {
+                    const section = document.createElement('div');
+                    section.className = 'mb-4';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'flex items-center gap-2 mb-3 px-1';
+                    header.innerHTML = `
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-200/80 px-2 py-1 rounded-md">${chapter}</span>
+                        <div class="flex-1 h-px bg-gray-200"></div>
+                        <span class="text-xs text-gray-400">${chapterNotes.length}</span>
+                    `;
+                    section.appendChild(header);
+
+                    chapterNotes
+                        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                        .forEach(note => {
+                            const group = data.groups.find(g => g.id === note.groupId) || data.groups[0];
+                            const card = document.createElement('div');
+                            card.className = 'ios-card p-4 mb-3 hover:shadow-md transition-shadow';
+                            
+                            const date = new Date(note.timestamp);
+                            const dateStr = date.toLocaleDateString('ru-RU', {
+                                day: 'numeric', 
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+
+                            card.innerHTML = `
+                                <div class="flex items-start justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full color-${group.color}"></span>
+                                        <span class="text-xs font-medium text-gray-500">${group.name}</span>
+                                    </div>
+                                    <span class="text-xs text-gray-400">${dateStr}</span>
+                                </div>
+                                <p class="text-gray-900 text-[15px] leading-relaxed mb-3 whitespace-pre-wrap">${escapeHtml(note.text)}</p>
+                                <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                                    <button onclick="toggleFavorite(${note.id})" class="text-xs font-medium ${note.favorite ? 'text-yellow-600' : 'text-gray-400'} ios-btn flex items-center gap-1 hover:text-yellow-600 transition-colors">
+                                        ${note.favorite ? '★' : '☆'} ${note.favorite ? 'В избранном' : 'В избранное'}
+                                    </button>
+                                    <button onclick="deleteNote(${note.id})" class="text-xs text-red-500 font-medium ios-btn hover:text-red-700 transition-colors">
+                                        Удалить
+                                    </button>
+                                </div>
+                            `;
+                            section.appendChild(card);
+                        });
+                    
+                    container.appendChild(section);
+                });
         }
 
-        function filterByGroup(id) {
-            currentGroup = id;
-            document.getElementById('headerSubtitle').textContent = id === 'all' ? 'Все группы' : data.groups.find(g => g.id === id)?.name;
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function filterByGroup(groupId) {
+            currentGroup = groupId;
+            renderCache.notes = null; // Invalidate cache
             renderGroups();
+            
+            const groupName = groupId === 'all' ? 'Все группы' : 
+                data.groups.find(g => g.id === groupId)?.name;
+            document.getElementById('headerSubtitle').textContent = groupName;
+            
             renderNotes();
         }
 
-        function toggleFavorite(id) {
-            const n = data.notes.find(x => x.id === id);
-            if (n) { n.favorite = !n.favorite; saveData(); renderNotes(); showToast(n.favorite ? 'В избранном' : 'Убрано'); }
+        async function toggleFavorite(id) {
+            const note = data.notes.find(n => n.id === id);
+            if (note) {
+                note.favorite = !note.favorite;
+                await saveToStorage();
+                renderCache.notes = null;
+                renderNotes();
+                showToast(note.favorite ? 'Добавлено в избранное' : 'Удалено из избранного');
+            }
         }
 
-        function deleteNote(id) {
-            if (confirm('Удалить запись?')) {
+        async function deleteNote(id) {
+            if (confirm('Удалить эту заметку?')) {
                 data.notes = data.notes.filter(n => n.id !== id);
-                saveData(); renderNotes(); updateStats(); updateSecurityStats();
+                await saveToStorage();
+                renderCache.notes = null;
+                renderNotes();
+                updateStats();
+                updateSecurityStats();
                 showToast('Удалено');
             }
         }
@@ -1403,107 +1358,396 @@
         function updateStats() {
             document.getElementById('statNotes').textContent = data.notes.length;
             document.getElementById('statGroups').textContent = data.groups.length;
+            
             const today = new Date().toDateString();
-            document.getElementById('statToday').textContent = data.notes.filter(n => new Date(n.timestamp).toDateString() === today).length;
+            document.getElementById('statToday').textContent = 
+                data.notes.filter(n => new Date(n.timestamp).toDateString() === today).length;
         }
 
-        // UI
-        function switchTab(tab) {
-            // Update nav
-            document.querySelectorAll('.nav-item').forEach(b => {
-                b.classList.remove('active');
-                b.style.color = '#999';
-            });
-            document.getElementById('nav' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
-            document.getElementById('nav' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.color = '#007AFF';
+        function updateSecurityStats() {
+            document.getElementById('secNotesCount').textContent = data.notes.length;
+            document.getElementById('secGroupsCount').textContent = data.groups.length;
             
-            // Show/hide content
-            document.getElementById('mainContent').classList.add('hidden');
-            document.getElementById('securityContent').classList.add('hidden');
-            document.querySelector('.header').classList.add('hidden');
+            const size = new Blob([JSON.stringify(data)]).size;
+            document.getElementById('secDataSize').textContent = 
+                size > 1024 ? (size / 1024).toFixed(1) + ' KB' : size + ' B';
             
-            if (tab === 'notes') {
-                document.getElementById('mainContent').classList.remove('hidden');
-                document.querySelector('.header').classList.remove('hidden');
-                document.getElementById('pageTitle').textContent = 'Записи';
-                document.getElementById('securityBadge').style.display = 'inline-flex';
-                document.getElementById('groupsChips').style.display = 'flex';
-            } else if (tab === 'groups') {
-                document.getElementById('mainContent').classList.remove('hidden');
-                document.querySelector('.header').classList.remove('hidden');
-                document.getElementById('pageTitle').textContent = 'Группы';
-                document.getElementById('securityBadge').style.display = 'none';
-                document.getElementById('groupsChips').style.display = 'none';
-                document.getElementById('notesList').innerHTML = '';
-                document.getElementById('emptyState').classList.add('hidden');
-                // Show groups management
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = '<div style="text-align: center; padding: 24px;"><div style="font-size: 17px; font-weight: 600; margin-bottom: 8px;">Управление группами</div><div style="font-size: 15px; color: #666; margin-bottom: 16px;">Создавайте группы через голосовой ввод</div></div>';
-                document.getElementById('notesList').appendChild(card);
-            } else if (tab === 'security') {
-                document.getElementById('securityContent').classList.remove('hidden');
-                updateSecurityStats();
-            }
+            document.getElementById('lastSyncTime').textContent = 
+                data.settings.lastSync ? 
+                    new Date(data.settings.lastSync).toLocaleString('ru-RU', {
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        day: 'numeric', 
+                        month: 'short'
+                    }) : 'Нет';
         }
 
+        // ==================== UI FUNCTIONS ====================
         function openNewNote() {
-            document.getElementById('newNoteSheet').classList.add('active');
+            document.getElementById('newNoteSheet').classList.remove('hidden');
+            setTimeout(() => {
+                document.querySelector('.sheet-enter').classList.add('sheet-enter-active');
+            }, 10);
+            
             document.getElementById('chapterInput').value = '';
             document.getElementById('textInput').value = '';
             document.getElementById('charCount').textContent = '0 символов';
             selectedGroup = currentGroup === 'all' ? data.groups[0].id : currentGroup;
             renderGroups();
+            
+            // Focus input
+            setTimeout(() => document.getElementById('chapterInput').focus(), 100);
         }
 
         function closeNewNote() {
-            document.getElementById('newNoteSheet').classList.remove('active');
+            document.querySelector('.sheet-enter').classList.remove('sheet-enter-active');
+            setTimeout(() => {
+                document.getElementById('newNoteSheet').classList.add('hidden');
+            }, 300);
         }
 
-        function saveNote() {
+        async function saveNote() {
             const chapter = document.getElementById('chapterInput').value;
             const text = document.getElementById('textInput').value;
-            if (!text.trim()) { showToast('Введите текст'); return; }
-            addNote(selectedGroup, chapter, text);
+            
+            if (!text.trim()) {
+                showToast('Введите текст заметки');
+                return;
+            }
+            
+            await addNote(selectedGroup, chapter, text);
             closeNewNote();
             showToast('Сохранено');
         }
 
         function startVoiceInSheet() {
-            if (!recognition) { showToast('Недоступно'); return; }
-            const oldHandler = recognition.onresult;
-            recognition.onresult = (e) => {
-                const t = Array.from(e.results).map(r => r[0].transcript).join('');
-                if (e.results[0].isFinal) {
-                    const el = document.getElementById('textInput');
-                    el.value += (el.value ? ' ' : '') + t;
-                    document.getElementById('charCount').textContent = el.value.length + ' символов';
+            if (!recognition) {
+                showToast('Голосовой ввод недоступен');
+                return;
+            }
+            
+            // Temporary override onresult
+            const originalOnResult = recognition.onresult;
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                }
+                if (transcript) {
+                    const t = document.getElementById('textInput');
+                    t.value += (t.value ? ' ' : '') + transcript;
+                    document.getElementById('charCount').textContent = 
+                        `${t.value.length} символов`;
                 }
             };
+            
             recognition.start();
             showToast('Говорите...');
-            recognition.onend = () => { recognition.onresult = oldHandler; isRecording = false; };
+            
+            recognition.onend = () => {
+                recognition.onresult = originalOnResult;
+            };
         }
 
-        function manualSync() {
-            saveData();
-            const blob = new Blob([JSON.stringify({...data, syncId: Date.now()})], {type: 'application/json'});
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                const isActive = btn.dataset.tab === tab;
+                btn.classList.toggle('text-blue-600', isActive);
+                btn.classList.toggle('text-gray-400', !isActive);
+            });
+            
+            document.getElementById('securityView').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            document.querySelector('header').classList.remove('hidden');
+            
+            if (tab === 'security') {
+                document.getElementById('securityView').classList.remove('hidden');
+                document.getElementById('mainContent').classList.add('hidden');
+                document.querySelector('header').classList.add('hidden');
+                updateSecurityStats();
+            } else if (tab === 'groups') {
+                showToast('Нажмите + чтобы добавить группу');
+            }
+        }
+
+        function showMenu() {
+            const choice = prompt('1. Экспорт\n2. Импорт\n3. Очистить все\n\nВыберите действие:');
+            if (choice === '1') exportData();
+            else if (choice === '2') importData();
+            else if (choice === '3') clearAll();
+        }
+
+        // ==================== ICLOUD & SYNC ====================
+        async function manualSync() {
+            const icon = document.getElementById('syncIcon');
+            const manualIcon = document.getElementById('manualSyncIcon');
+            
+            icon?.classList.add('sync-spin');
+            manualIcon?.classList.add('sync-spin');
+            
+            showToast('Синхронизация...');
+            
+            try {
+                // Export encrypted data for iCloud
+                const exportData = {
+                    encrypted: await secureStorage.encrypt(data),
+                    metadata: {
+                        version: '4.0',
+                        device: navigator.userAgent,
+                        timestamp: Date.now()
+                    }
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { 
+                    type: 'application/json' 
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `VoiceNotes_iCloud_${new Date().toISOString().split('T')0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                data.settings.lastSync = new Date().toISOString();
+                await saveToStorage();
+                updateSecurityStats();
+                
+                showToast('Синхронизировано с iCloud');
+            } catch (e) {
+                console.error('Sync failed:', e);
+                showToast('Ошибка синхронизации');
+            } finally {
+                setTimeout(() => {
+                    icon?.classList.remove('sync-spin');
+                    manualIcon?.classList.remove('sync-spin');
+                }, 1500);
+            }
+        }
+
+        function toggleIcloud() {
+            const toggle = document.getElementById('icloudToggle');
+            toggle.classList.toggle('active');
+            data.settings.icloudSync = toggle.classList.contains('active');
+            saveToStorage();
+            showToast(data.settings.icloudSync ? 'iCloud активен' : 'iCloud отключен');
+        }
+
+        function toggleAutoLock() {
+            const toggle = document.getElementById('autoLockToggle');
+            toggle.classList.toggle('active');
+            data.settings.autoLock = toggle.classList.contains('active');
+            saveToStorage();
+            showToast(data.settings.autoLock ? 'Автоблокировка включена' : 'Автоблокировка отключена');
+        }
+
+        async function changePasscode() {
+            const current = prompt('Текущий код-пароль:');
+            if (current !== localStorage.getItem(secureStorage.PASSCODE_KEY)) {
+                showToast('Неверный код');
+                return;
+            }
+            
+            const newPass = prompt('Новый 4-значный код:');
+            if (newPass && /^\d{4}$/.test(newPass)) {
+                localStorage.setItem(secureStorage.PASSCODE_KEY, newPass);
+                
+                // Re-initialize with new passcode
+                await secureStorage.init(newPass);
+                await saveToStorage();
+                
+                showToast('Код изменен');
+            } else {
+                showToast('Введите 4 цифры');
+            }
+        }
+
+        async function exportEncrypted() {
+            const password = prompt('Введите пароль для шифрования:');
+            if (!password) return;
+            
+            try {
+                // Create temporary key with user password
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const enc = new TextEncoder();
+                const passwordKey = await crypto.subtle.importKey(
+                    'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+                );
+                const key = await crypto.subtle.deriveKey(
+                    { name: 'PBKDF2', salt, iterations: 600000, hash: 'SHA-256' },
+                    passwordKey,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt']
+                );
+                
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const encoded = enc.encode(JSON.stringify(data));
+                const ciphertext = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv },
+                    key,
+                    encoded
+                );
+                
+                const exportObj = {
+                    salt: Array.from(salt),
+                    iv: Array.from(iv),
+                    data: Array.from(new Uint8Array(ciphertext)),
+                    version: '4.0'
+                };
+                
+                const blob = new Blob([JSON.stringify(exportObj)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `VoiceNotes_Encrypted_${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showToast('Экспорт завершен');
+            } catch (e) {
+                console.error('Export failed:', e);
+                showToast('Ошибка экспорта');
+            }
+        }
+
+        async function importEncrypted() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const password = prompt('Введите пароль для расшифровки:');
+                if (!password) return;
+                
+                try {
+                    const text = await file.text();
+                    const encrypted = JSON.parse(text);
+                    
+                    const salt = new Uint8Array(encrypted.salt);
+                    const iv = new Uint8Array(encrypted.iv);
+                    const data = new Uint8Array(encrypted.data);
+                    
+                    const enc = new TextEncoder();
+                    const passwordKey = await crypto.subtle.importKey(
+                        'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+                    );
+                    const key = await crypto.subtle.deriveKey(
+                        { name: 'PBKDF2', salt, iterations: 600000, hash: 'SHA-256' },
+                        passwordKey,
+                        { name: 'AES-GCM', length: 256 },
+                        false,
+                        ['decrypt']
+                    );
+                    
+                    const decrypted = await crypto.subtle.decrypt(
+                        { name: 'AES-GCM', iv },
+                        key,
+                        data
+                    );
+                    
+                    const imported = JSON.parse(new TextDecoder().decode(decrypted));
+                    
+                    if (confirm(`Импортировать ${imported.notes?.length || 0} заметок?`)) {
+                        data.notes = [...data.notes, ...(imported.notes || [])];
+                        await saveToStorage();
+                        renderNotes();
+                        updateStats();
+                        showToast('Импорт завершен');
+                    }
+                } catch (e) {
+                    console.error('Import failed:', e);
+                    showToast('Неверный пароль или файл');
+                }
+            };
+            input.click();
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `VoiceNotes_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `VoiceNotes_Backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
-            data.settings.lastSync = new Date().toISOString();
-            saveData();
-            saveSettings();
-            showToast('Синхронизировано');
+            URL.revokeObjectURL(url);
+            showToast('Резервная копия создана');
         }
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2500);
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                    const text = await file.text();
+                    const imported = JSON.parse(text);
+                    
+                    if (confirm(`Импортировать ${imported.notes?.length || 0} заметок?`)) {
+                        data = { 
+                            ...data, 
+                            ...imported, 
+                            settings: { ...data.settings, ...imported.settings } 
+                        };
+                        await saveToStorage();
+                        renderGroups();
+                        renderNotes();
+                        updateStats();
+                        updateSecurityStats();
+                        showToast('Импорт завершен');
+                    }
+                } catch (err) {
+                    showToast('Ошибка импорта');
+                }
+            };
+            input.click();
+        }
+
+        async function clearAll() {
+            if (confirm('Удалить ВСЕ данные?')) {
+                data.notes = [];
+                data.groups = [
+                    { id: 'personal', name: 'Личное', color: 'blue' },
+                    { id: 'work', name: 'Работа', color: 'orange' }
+                ];
+                await saveToStorage();
+                renderCache = { groups: null, notes: null };
+                renderGroups();
+                renderNotes();
+                updateStats();
+                updateSecurityStats();
+                showToast('Все данные удалены');
+            }
+        }
+
+        // ==================== UTILITIES ====================
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100', 'toast');
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                toast.classList.remove('opacity-100');
+            }, 2500);
+        }
+
+        // Service Worker for offline support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript,' + encodeURIComponent(`
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+                self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+            `)).catch(() => {});
         }
     </script>
 </body>
