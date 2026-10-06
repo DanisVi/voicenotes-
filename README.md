@@ -1,64 +1,91 @@
-# 🔐 VoiceNotes Pro
+# VoiceNotes Pro
 
-&gt; Enterprise-ready PWA для защищенных голосовых заметок с AI-обработкой, офлайн-режимом и аппаратным шифрованием.
+🔒 Локальные зашифрованные голосовые заметки. Всё работает в браузере — данные никогда не покидают устройство.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?logo=pwa)](https://web.dev/progressive-web-apps/)
-[![Security](https://img.shields.io/badge/Security-AES--256--GCM-green)](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
-[![iOS](https://img.shields.io/badge/iOS-14%2B-black?logo=apple)](https://www.apple.com/ios/)
+**Live:** https://danisvi.github.io/voicenotes-/
 
 ---
 
-## 🚀 Что нового в v4.0
+## Возможности
 
-### 🏗️ Enterprise Архитектура
-- **IndexedDB + OPFS** — хранение до 80% диска вместо 5MB localStorage
-- **Virtual Scrolling** — плавная работа с 10 000+ заметками без лагов
-- **Web Workers** — криптография в фоне, UI не блокируется
-- **Recycler View** — переиспользование DOM-элементов для экономии памяти
+- 🔐 **Шифрование** — AES-256-GCM, ключ из мастер-пароля (PBKDF2, 250 000 итераций)
+- 🎙 **Голосовой ввод** — через Web Speech API, с превью и ручной правкой
+- 📝 **Заметки** — CRUD, поиск, избранное (★), привязка к группам
+- 🗂 **Группы** — свои названия + эмодзи-иконки
+- 📴 **PWA** — устанавливается на домашний экран, офлайн-кэш
+- ⏱ **Автоблокировка** — при сворачивании/через 30 с неактивности
+- 💾 **Хранение** — IndexedDB (зашифрованные блобы + canary для верификации пароля)
+- 🌐 **Без бэкенда** — 100% клиентская сторона, ноль сетевых запросов с данными
 
-### 🎙️ Умный голосовой ввод
-- **Wake Word Detection** — активируйте фразой "Запиши" или "Hey Notes"
-- **Voice Activity Detection (VAD)** — автоматическая остановка при тишине
-- **Smart Commands** — парсинг структурированных команд:
-  &gt; *"Группа Работа, Глава Встречи, обсудить дизайн с командой"* → автосоздание группы, главы и записи
-- **Real-time Waveform** — визуализация аудиоуровня при записи
+## Стек
 
-### 🔐 Безопасность уровня банка
-- **AES-256-GCM** — аутентифицированное шифрование с PBKDF2 (600 000 итераций)
-- **Secure Enclave** — ключи никогда не покидают аппаратный модуль
-- **Biometric Gate** — повторная биометрия для экспорта/удаления данных
-- **Streaming Encryption** — шифрование больших файлов чанками по 64KB
+- **Vite 5.4** + vanilla JS (ESM)
+- **Tailwind CSS 3.4** (PostCSS, autoprefixer)
+- **Web Crypto API** (AES-GCM, PBKDF2)
+- **IndexedDB** через тонкую обёртку
+- **Web Speech API** для распознавания речи
+- **GitHub Pages** + Actions для CI/CD
 
-### ☁️ Интеллектуальная синхронизация
-- **Background Sync** — синхронизация даже при закрытом приложении
-- **Periodic Sync** — автоматическая проверка каждые 15 минут
-- **Offline Queue** — изменения накапливаются и отправляются при подключении
-- **Conflict Resolution** — интеллектуальное разрешение конфликтов версий
+## Архитектура
 
-### 🤖 AI-возможности
-- **Smart Tags** — автоматическая категоризация заметок
-- **Semantic Search** — поиск по смыслу, а не только по ключевым словам
-- **Auto-complete** — предиктивный ввод на основе существующих заметок
-- **Related Notes** — нахождение связанных записей по векторной близости
+- `src/app.js` — роутинг LockScreen ↔ Shell + autolock
+- `src/main.js` — точка входа
+- `src/core/crypto.js` — AES-256-GCM, PBKDF2 250k
+- `src/core/storage.js` — IndexedDB, saveEncrypted/loadEncrypted
+- `src/core/auth.js` — canary-based верификация пароля
+- `src/core/state.js` — createStore
+- `src/core/autolock.js` — visibilitychange + timeout 30s
+- `src/ui/LockScreen.js` — экран ввода мастер-пароля
+- `src/ui/MainScreen.js` — заметки, поиск, ★, группы, FAB, 🎤
+- `src/ui/SecurityScreen.js` — настройки безопасности
+- `src/ui/GroupsScreen.js` — CRUD групп + эмодзи-picker
+- `src/ui/VoiceModal.js` — Web Speech, состояния записи
+- `src/ui/Shell.js` — 3 таба: Заметки / Группы / Безопасность
+- `src/modules/voice.js` — обёртка Web Speech API
+- `src/modules/parser.js` — парсер команд (на будущее)
+- `src/utils/dom.js` — el()
+## Модель данных
 
----
+    Vault = { notes: [...], groups: [...] }
+    Note  = { id, text, timestamp, favorite, groupId }
+    Group = { id, name, emoji }
 
-## ✨ Возможности
+Всё содержимое Vault шифруется целиком перед записью в IndexedDB.
 
-| Функция | Описание |
-|---------|----------|
-| 🎤 **Голосовой ввод** | Распознавание речи с поддержкой команд |
-| 🔒 **Face ID / Touch ID** | WebAuthn с Secure Enclave |
-| 🔢 **PIN-код** | 4-значный пароль с PBKDF2-хешированием |
-| ☁️ **iCloud Sync** | Зашифрованный бэкап в JSON |
-| 📁 **Группы и главы** | Иерархическая структура записей |
-| 🔄 **Автоблокировка** | При сворачивании или уходе в фон |
-| 💾 **Auto-save** | Мгновенное сохранение в IndexedDB |
-| 🔍 **Полнотекстовый поиск** | Токенизированный поиск по 100k+ записям |
-| 👆 **Жесты** | Свайп для избранного/удаления |
-| 📴 **Offline-first** | Полная функциональность без сети |
+## Разработка
 
----
+    npm install
+    npm run dev        # http://127.0.0.1:5173
+    npm run build      # -> dist/
+    npm run preview    # локальный предпросмотр прод-сборки
 
-## 🛠️ Технологический стек
+## Деплой
+
+Каждый push в main запускает workflow deploy.yml:
+
+1. npm ci
+2. npm run build
+3. Публикация dist/ на GitHub Pages
+
+Base-path Vite — /voicenotes-/, чтобы ассеты корректно резолвились на danisvi.github.io/voicenotes-/.
+
+## Безопасность
+
+- Мастер-пароль нигде не хранится — только деривация ключа
+- crypto.getRandomValues для salt и IV
+- localStorage не используется для чувствительных данных
+- При блокировке ключ обнуляется в памяти
+- Web Speech API — единственный «сетевой» вызов, инициируется только явным нажатием 🎤
+
+## Что дальше
+
+- [ ] Экспорт/импорт зашифрованного vault (.vnp файл)
+- [ ] Парсер голосовых команд
+- [ ] Тёмная тема
+- [ ] Поиск по группам + фильтр избранного
+- [ ] Каскадное удаление заметок при удалении группы
+
+## Лицензия
+
+MIT
+
