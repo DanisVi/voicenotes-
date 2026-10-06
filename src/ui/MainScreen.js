@@ -1,3 +1,4 @@
+import { VoiceModal } from './VoiceModal.js';
 import { loadEncrypted, saveEncrypted } from '../core/storage.js';
 
 export class MainScreen {
@@ -58,6 +59,7 @@ export class MainScreen {
         <div id="group-chips" class="flex gap-2 mt-2 overflow-x-auto pb-1"></div>
       </header>
       <main id="list" class="px-4 pt-4 space-y-3"></main>
+      <button id="voice-btn" class="fixed bottom-40 right-5 w-12 h-12 bg-white border border-gray-200 rounded-full text-xl shadow-lg z-20">🎤</button>
       <button id="fab" class="fixed bottom-24 right-5 w-14 h-14 bg-blue-500 rounded-full text-white text-3xl shadow-xl z-20">+</button>
       <div id="sheet" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/40" id="sheet-backdrop"></div>
@@ -80,6 +82,7 @@ export class MainScreen {
 
   bindEvents() {
     this.el.querySelector('#lock-btn').addEventListener('click', () => this.onLock());
+    this.el.querySelector('#voice-btn').addEventListener('click', () => this.openVoice());
     this.el.querySelector('#fab').addEventListener('click', () => this.openSheet());
     this.el.querySelector('#cancel').addEventListener('click', () => this.closeSheet());
     this.el.querySelector('#sheet-backdrop').addEventListener('click', () => this.closeSheet());
@@ -90,6 +93,32 @@ export class MainScreen {
       this.query = e.target.value.toLowerCase();
       this.renderList();
     });
+  }
+
+  openVoice() {
+    const modal = new VoiceModal(this.el, {
+      vaultKey: this.vaultKey,
+      groups: this.data.groups,
+      onSave: ({ text, groupId }) => this.addNoteFromVoice(text, groupId),
+      onClose: () => { this.voiceModal = null; },
+    });
+    this.voiceModal = modal;
+    modal.mount();
+  }
+
+  async addNoteFromVoice(text, groupId) {
+    if (!text) return;
+    this.data.notes.unshift({
+      id: Date.now(),
+      text,
+      timestamp: new Date().toISOString(),
+      favorite: false,
+      groupId: groupId || null,
+    });
+    await this.persist();
+    this.refreshHeader();
+    this.renderList();
+    this.fillGroupChips();
   }
 
   setFilter(favOnly) {
