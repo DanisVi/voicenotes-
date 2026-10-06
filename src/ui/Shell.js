@@ -1,5 +1,6 @@
 import { MainScreen } from './MainScreen.js';
 import { SecurityScreen } from './SecurityScreen.js';
+import { GroupsScreen } from './GroupsScreen.js';
 
 export class Shell {
   constructor(root, { vaultKey, onLock }) {
@@ -65,7 +66,9 @@ export class Shell {
       this.screens[tab] = s;
       await s.mount();
     } else if (tab === 'groups') {
-      host.innerHTML = '<div class="p-8 text-center text-gray-400 pt-24">Группы — скоро</div>';
+        const s = new GroupsScreen(host, { vaultKey: this.vaultKey, onLock: this.onLock });
+        this.screens[tab] = s;
+        await s.mount();
     }
   }
 

@@ -9,12 +9,14 @@ export class MainScreen {
     this.data = { notes: [] };
     this.query = '';
     this.filterFav = false;
+    this.filterGroupId = null;
   }
 
   async mount() {
     try {
       const loaded = await loadEncrypted(this.vaultKey);
       if (loaded && Array.isArray(loaded.notes)) this.data = loaded;
+      if (!Array.isArray(this.data.groups)) this.data.groups = [];
     } catch (e) {
       console.error('load failed', e);
     }
@@ -23,6 +25,7 @@ export class MainScreen {
     this.el.innerHTML = this.render();
     this.root.appendChild(this.el);
     this.bindEvents();
+    this.fillGroupChips();
     this.renderList();
   }
 
@@ -52,15 +55,20 @@ export class MainScreen {
           <button id="tab-all" class="px-3 py-1.5 rounded-full text-xs font-medium bg-gray-900 text-white">Все</button>
           <button id="tab-fav" class="px-3 py-1.5 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-200">★ Избранное</button>
         </div>
+        <div id="group-chips" class="flex gap-2 mt-2 overflow-x-auto pb-1"></div>
       </header>
       <main id="list" class="px-4 pt-4 space-y-3"></main>
       <button id="fab" class="fixed bottom-24 right-5 w-14 h-14 bg-blue-500 rounded-full text-white text-3xl shadow-xl z-20">+</button>
-      <div id="sheet" class="fixed inset-0 z-30 hidden">
+      <div id="sheet" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/40" id="sheet-backdrop"></div>
-        <div id="sheet-panel" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-4 transition-transform duration-300" style="transform: translateY(100%)">
+        <div id="sheet-panel" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-4 pb-8 transition-transform duration-300" style="transform: translateY(100%)">
           <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4"></div>
           <textarea id="note-text" rows="5" placeholder="Текст заметки..."
             class="w-full p-3 bg-gray-100 rounded-xl resize-none outline-none"></textarea>
+        <div class="mt-3">
+          <div class="text-xs text-gray-500 mb-2">Группа</div>
+          <div id="note-group-chips" class="flex gap-2 overflow-x-auto pb-1"></div>
+        </div>
           <div class="flex gap-2 mt-3">
             <button id="cancel" class="flex-1 py-3 bg-gray-100 rounded-xl">Отмена</button>
             <button id="save" class="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium">Сохранить</button>
@@ -100,6 +108,8 @@ export class MainScreen {
 
   openSheet() {
     this.el.querySelector('#note-text').value = '';
+    this.pendingGroupId = null;
+    this.fillNoteGroupChips();
     const sheet = this.el.querySelector('#sheet');
     const panel = this.el.querySelector('#sheet-panel');
     sheet.classList.remove('hidden');
@@ -115,6 +125,45 @@ export class MainScreen {
     setTimeout(() => sheet.classList.add('hidden'), 300);
   }
 
+  fillGroupChips() {
+    const wrap = this.el.querySelector('#group-chips');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    const mk = (label, id) => {
+      const btn = document.createElement('button');
+      const active = this.filterGroupId === id;
+      btn.className = 'px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ' + (active ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 border border-gray-200');
+      btn.textContent = label;
+      btn.addEventListener('click', () => this.setGroupFilter(id));
+      wrap.appendChild(btn);
+    };
+    mk('Все', null);
+    this.data.groups.forEach((g) => mk(g.emoji + ' ' + g.name, g.id));
+  }
+
+  setGroupFilter(id) {
+    this.filterGroupId = id;
+    this.fillGroupChips();
+    this.renderList();
+  }
+
+  fillNoteGroupChips() {
+    const wrap = this.el.querySelector('#note-group-chips');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    const mk = (label, id) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const active = this.pendingGroupId === id;
+      btn.className = 'px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ' + (active ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 border border-gray-200');
+      btn.textContent = label;
+      btn.addEventListener('click', () => { this.pendingGroupId = id; this.fillNoteGroupChips(); });
+      wrap.appendChild(btn);
+    };
+    mk('Без группы', null);
+    this.data.groups.forEach((g) => mk(g.emoji + ' ' + g.name, g.id));
+  }
+
   async saveNote() {
     const text = this.el.querySelector('#note-text').value.trim();
     if (!text) return;
@@ -123,6 +172,7 @@ export class MainScreen {
       text,
       timestamp: new Date().toISOString(),
       favorite: false,
+      groupId: this.pendingGroupId || null,
     });
     await this.persist();
     this.closeSheet();
@@ -172,6 +222,7 @@ export class MainScreen {
     let notes = this.data.notes;
     if (this.filterFav) notes = notes.filter((n) => n.favorite);
     if (this.query) notes = notes.filter((n) => n.text.toLowerCase().includes(this.query));
+    if (this.filterGroupId) notes = notes.filter((n) => n.groupId === this.filterGroupId);
     if (notes.length === 0) {
       list.innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 text-center">
