@@ -1,9 +1,9 @@
 import { deriveKey, encrypt, decrypt } from './crypto.js';
 import { getOrCreateSalt, openDB } from './storage.js';
 
-const CANARY_TEXT = 'voicenotes::canary::v1';
+export const CANARY_TEXT = 'voicenotes::canary::v1';
 const META_STORE = 'meta';
-const CANARY_KEY = 'canary';
+export const CANARY_KEY = 'canary';
 const WEBAUTHN_KEY = 'webauthn_cred';
 async function metaGet(key) {
   const db = await openDB();

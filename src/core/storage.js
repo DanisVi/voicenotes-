@@ -130,3 +130,35 @@ export async function clearVault() {
     }).catch(reject);
   });
 }
+
+// === Экспорт для бэкапа (Этап 10A) ===
+
+export { META_SALT_KEY, VAULT_BLOB_KEY };
+
+export async function readMeta(key) {
+  return getMeta(key);
+}
+
+export async function writeMeta(key, value) {
+  return setMeta(key, value);
+}
+
+export async function readRawVaultBlob() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const t = db.transaction(VAULT_STORE, 'readonly');
+    const req = t.objectStore(VAULT_STORE).get(VAULT_BLOB_KEY);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function writeRawVaultBlob(payload) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const t = db.transaction(VAULT_STORE, 'readwrite');
+    t.objectStore(VAULT_STORE).put(payload, VAULT_BLOB_KEY);
+    t.oncomplete = () => resolve();
+    t.onerror = () => reject(t.error);
+  });
+}
