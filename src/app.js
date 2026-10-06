@@ -1,6 +1,7 @@
 import { createStore } from './core/state.js';
 import { LockScreen } from './ui/LockScreen.js';
 import { Shell } from './ui/Shell.js';
+import { createAutolock } from './core/autolock.js';
 
 export class App {
   constructor({ root }) {
@@ -9,6 +10,7 @@ export class App {
     this.store = createStore({ authenticated: false });
     this.lockScreen = null;
     this.shell = null;
+    this.autolock = null;
   }
 
   async start() {
@@ -30,14 +32,18 @@ export class App {
       onLock: () => this.lock(),
     });
     await this.shell.mount();
+    if (this.autolock) this.autolock.destroy();
+    this.autolock = createAutolock({ onLock: () => this.lock() });
   }
 
   async lock() {
+    if (this.autolock) { this.autolock.destroy(); this.autolock = null; }
     this.vaultKey = null;
     this.store.set({ authenticated: false });
     if (this.shell) {
       this.shell.unmount();
       this.shell = null;
+    this.autolock = null;
     }
     await this.start();
   }
