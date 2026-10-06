@@ -1,5 +1,6 @@
+const SCOPE = new URL('./', self.location).pathname;
 const CACHE = 'voicenotes-v1';
-const ASSETS = ['/', '/index.html', '/manifest.webmanifest'];
+const ASSETS = [SCOPE, SCOPE + 'index.html', SCOPE + 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -26,6 +27,6 @@ self.addEventListener('fetch', (e) => {
         }
         return resp;
       })
-      .catch(() => caches.match(request).then((r) => r || caches.match('/index.html')))
+      .catch(() => caches.match(request).then((r) => r || caches.match(SCOPE + 'index.html')))
   );
 });

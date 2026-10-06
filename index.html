@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#007AFF" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="manifest.webmanifest" />
   <title>VoiceNotes Pro</title>
 </head>
 <body>
@@ -17,7 +17,7 @@
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/sw.js").catch((e) => console.warn("SW register failed", e));
+          navigator.serviceWorker.register("sw.js").catch((e) => console.warn("SW register failed", e));
         });
       }
     </script>
