@@ -9,7 +9,7 @@ const TRANSLIT = {
 };
 const NUM_WORDS = /(odin|dva|dve|tri|chetyre|pyat|shest|sem|vosem|devyat|desyat|nol|zero|one|two|three|four|five|six|seven|eight|nine|ten)/g;
 
-function normForMatch(s) {
+export function normForMatch(s) {
   let n = (s || '').toLowerCase();
   n = n.split('').map((c) => TRANSLIT[c] || c).join('');
   n = n.replace(/[^a-z0-9]/g, '');

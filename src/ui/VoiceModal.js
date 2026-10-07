@@ -1,5 +1,5 @@
 import { createRecognizer, isSpeechSupported } from '../modules/voice.js';
-import { parseCommand } from '../modules/parser.js';
+import { parseCommand, normForMatch } from '../modules/parser.js';
 
 export class VoiceModal {
   constructor(root, { vaultKey, groups = [], onSave, onClose } = {}) {
@@ -91,7 +91,8 @@ export class VoiceModal {
     this.finalText = parsed.text;
 
     if (parsed.groupName) {
-      const hit = (this.groups || []).find((g) => g.name === parsed.groupName);
+        const pgNorm = normForMatch(parsed.groupName);
+        const hit = (this.groups || []).find((g) => normForMatch(g.name) === pgNorm);
       if (hit) this.selectedGroupId = hit.id;
     }
 
