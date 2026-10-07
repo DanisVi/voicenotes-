@@ -52,7 +52,7 @@ export class LockScreen {
     for (let i = 0; i < 4; i++) {
       const d = document.createElement('div');
       d.className = 'w-4 h-4 rounded-full border-2 border-white transition-all';
-      if (i < this.buffer.length) d.classList.add('bg-white');
+      if (i < this.buffer.length) d.style.backgroundColor = '#fff';
       dots.appendChild(d);
     }
   }
