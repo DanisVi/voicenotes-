@@ -1,6 +1,6 @@
-import { clearVault } from '../core/storage.js';
+import { clearVault, loadEncrypted, saveEncrypted } from '../core/storage.js';
 import { clearAuth } from '../core/auth.js';
-import { exportVault, parseBackupFile, importVault } from '../core/backup.js';
+import { exportVault, parseBackupFile, decryptBackup, vaultStats, mergeVaults } from '../core/backup.js';
 
 export class SecurityScreen {
   constructor(host, { vaultKey, onLock, root }) {
@@ -135,6 +135,7 @@ export class SecurityScreen {
     }
   }
 
+
   async handleFileSelected(file) {
     const input = this.el.querySelector('#import-file');
     if (!file) return;
@@ -145,25 +146,70 @@ export class SecurityScreen {
         if (input) input.value = '';
         return;
       }
-      const ok = await this.showConfirmDialog({
-        title: 'Импортировать vault?',
-        message: 'Текущие заметки и пароль будут заменены данными из файла.',
-        confirmText: 'Импортировать',
-        danger: true,
+
+      // 1. Расшифровать файл паролем из файла (ничего не пишем).
+      const imported = await decryptBackup(backup, passcode);
+
+      // 2. Прочитать текущий vault (уже расшифрован текущим ключом).
+      const current = (await loadEncrypted(this.vaultKey)) || { notes: [], groups: [] };
+
+      // 3. Посчитать статистику для превью.
+      const sCur = vaultStats(current);
+      const sImp = vaultStats(imported);
+      const merged = mergeVaults(current, imported);
+      const sMer = vaultStats(merged);
+
+      // 4. Модалка выбора: Слить / Заменить / Отмена.
+      const choice = await this.showImportChoiceDialog({
+        cur: sCur,
+        imp: sImp,
+        mer: sMer,
       });
-      if (!ok) {
+      if (choice === 'cancel') {
         if (input) input.value = '';
         return;
       }
-      await importVault(backup, passcode);
-      this.showToast('Импорт успешен. Перезагрузка...', 'ok');
-      setTimeout(() => location.reload(), 800);
+
+      if (choice === 'replace') {
+        const ok = await this.showConfirmDialog({
+          title: 'Заменить все данные?',
+          message:
+            'Ваши текущие ' + sCur.notes + ' заметок и ' + sCur.groups +
+            ' групп будут полностью заменены данными из файла (' +
+            sImp.notes + ' заметок). Это необратимо.',
+          confirmText: 'Заменить',
+          danger: true,
+        });
+        if (!ok) {
+          if (input) input.value = '';
+          return;
+        }
+        await saveEncrypted(this.vaultKey, {
+          notes: imported.notes,
+          groups: imported.groups,
+        });
+        this.showToast(
+          'Импорт (замена): ' + sImp.notes + ' заметок. Перезагрузка...',
+          'ok'
+        );
+      } else {
+        // choice === 'merge'
+        await saveEncrypted(this.vaultKey, merged);
+        const addedNotes = sMer.notes - sCur.notes;
+        const addedGroups = sMer.groups - sCur.groups;
+        this.showToast(
+          'Слияние: +' + addedNotes + ' заметок, +' + addedGroups +
+            ' групп. Перезагрузка...',
+          'ok'
+        );
+      }
+
+      setTimeout(() => location.reload(), 900);
     } catch (e) {
       this.showToast('Ошибка: ' + e.message, 'err');
       if (input) input.value = '';
     }
   }
-
   showToast(text, kind) {
     const el = this.el.querySelector('#backup-status');
     if (!el) return;
@@ -209,6 +255,41 @@ export class SecurityScreen {
         if (e.target === overlay) close(null);
       });
       setTimeout(() => input.focus(), 50);
+    });
+  }
+
+  showImportChoiceDialog({ cur, imp, mer }) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className =
+        'fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4';
+      overlay.innerHTML =
+        '<div class="bg-white rounded-2xl p-5 w-full max-w-sm shadow-xl">' +
+        '  <div class="font-bold text-gray-900 mb-1">Импорт резервной копии</div>' +
+        '  <div class="text-xs text-gray-500 mb-3">Файл расшифрован. Выберите, что делать с данными.</div>' +
+        '  <div class="text-xs text-gray-700 bg-gray-50 rounded-lg p-3 mb-3 space-y-1">' +
+        '    <div>В файле: <b>' + imp.notes + '</b> заметок, <b>' + imp.groups + '</b> групп, ★ <b>' + imp.favorites + '</b></div>' +
+        '    <div>Сейчас: <b>' + cur.notes + '</b> заметок, <b>' + cur.groups + '</b> групп</div>' +
+        '    <div class="text-blue-600">После слияния: <b>' + mer.notes + '</b> заметок, <b>' + mer.groups + '</b> групп</div>' +
+        '  </div>' +
+        '  <div class="flex flex-col gap-2">' +
+        '    <button id="_ic_merge" class="w-full bg-blue-500 text-white rounded-lg p-3 text-sm font-semibold">Слить (сохранить оба набора)</button>' +
+        '    <button id="_ic_replace" class="w-full bg-gray-100 text-red-600 rounded-lg p-3 text-sm font-semibold">Заменить (только из файла)</button>' +
+        '    <button id="_ic_cancel" class="w-full bg-gray-100 text-gray-900 rounded-lg p-3 text-sm font-semibold">Отмена</button>' +
+        '  </div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+
+      const close = (val) => {
+        overlay.remove();
+        resolve(val);
+      };
+      overlay.querySelector('#_ic_merge').addEventListener('click', () => close('merge'));
+      overlay.querySelector('#_ic_replace').addEventListener('click', () => close('replace'));
+      overlay.querySelector('#_ic_cancel').addEventListener('click', () => close('cancel'));
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close('cancel');
+      });
     });
   }
 

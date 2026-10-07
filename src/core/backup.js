@@ -81,7 +81,10 @@ export async function parseBackupFile(file) {
   return data;
 }
 
-export async function importVault(backup, passcode) {
+
+// Этап 10B — импорт без подмены пароля сеанса.
+// Возвращает расшифрованный vault из файла; ничего не пишет.
+export async function decryptBackup(backup, passcode) {
   const salt = base64ToBytes(backup.salt);
   const key = await deriveKey(passcode, salt);
 
@@ -95,9 +98,90 @@ export async function importVault(backup, passcode) {
     throw new Error('Неверный пароль');
   }
 
-  await writeMeta(META_SALT_KEY, salt);
-  await writeMeta(CANARY_KEY, backup.canary);
-  await writeRawVaultBlob(backup.vault);
+  let vaultJson;
+  try {
+    vaultJson = await decrypt(key, backup.vault);
+  } catch {
+    throw new Error('Не удалось расшифровать vault (файл повреждён)');
+  }
 
-  return true;
+  let vault;
+  try {
+    vault = JSON.parse(vaultJson);
+  } catch {
+    throw new Error('Расшифрованный vault не является JSON');
+  }
+
+  return {
+    notes: Array.isArray(vault.notes) ? vault.notes : [],
+    groups: Array.isArray(vault.groups) ? vault.groups : [],
+  };
+}
+
+export function vaultStats(vault) {
+  const notes = Array.isArray(vault && vault.notes) ? vault.notes : [];
+  const groups = Array.isArray(vault && vault.groups) ? vault.groups : [];
+  return {
+    notes: notes.length,
+    groups: groups.length,
+    favorites: notes.filter((n) => !!n.favorite).length,
+  };
+}
+
+// Слияние двух vault'ов без побочек.
+// groups: union по id, локальные приоритетнее.
+// notes:  union по id, при коллизии — версия с большим timestamp.
+// Битая ссылка groupId (нет ни в local, ни в imported) → null.
+// Возвращает новый объект, входные не мутирует.
+export function mergeVaults(local, imported) {
+  const localVault = {
+    notes: Array.isArray(local && local.notes) ? local.notes : [],
+    groups: Array.isArray(local && local.groups) ? local.groups : [],
+  };
+  const importedVault = {
+    notes: Array.isArray(imported && imported.notes) ? imported.notes : [],
+    groups: Array.isArray(imported && imported.groups) ? imported.groups : [],
+  };
+
+  // groups: сначала imported, потом local — local перезаписывает по id.
+  const groupsById = new Map();
+  for (const g of importedVault.groups) {
+    if (g && g.id) groupsById.set(g.id, g);
+  }
+  for (const g of localVault.groups) {
+    if (g && g.id) groupsById.set(g.id, g);
+  }
+  const groups = Array.from(groupsById.values());
+
+  // notes: сначала imported, потом local; при коллизии — свежее по timestamp.
+  const notesById = new Map();
+  for (const n of importedVault.notes) {
+    if (n && n.id) notesById.set(n.id, n);
+  }
+  for (const n of localVault.notes) {
+    if (!n || !n.id) continue;
+    const existing = notesById.get(n.id);
+    if (!existing) {
+      notesById.set(n.id, n);
+      continue;
+    }
+    const a = Number(existing.timestamp) || 0;
+    const b = Number(n.timestamp) || 0;
+    notesById.set(n.id, b >= a ? n : existing);
+  }
+
+  // Чистим битые ссылки на группы.
+  const validGroupIds = new Set(groups.map((g) => g.id));
+  const notes = Array.from(notesById.values()).map((n) => {
+    const gid = n.groupId && validGroupIds.has(n.groupId) ? n.groupId : null;
+    return { ...n, groupId: gid };
+  });
+
+  // Порядок: новые заметки сверху, группы по алфавиту (ru).
+  notes.sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
+  groups.sort((a, b) =>
+    String(a.name || '').localeCompare(String(b.name || ''), 'ru')
+  );
+
+  return { notes, groups };
 }
