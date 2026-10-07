@@ -19,6 +19,7 @@ function normForMatch(s) {
 
 const RE_GROUP = /\s+(?:в\s+группу|в\s+группе|группа)\s+([^,.:;!?]+?)(?=\s+(?:заметка|запиши|напиши|note)\b|$)/i;
 const RE_GROUP_TRAIL = /[,.]?\s*(?:в\s+группу|в\s+группе|группа)\s+(.+?)\s*$/i;
+const RE_NOTE = /^\s*(?:заметка|запиши|напиши|note)(?![а-яё])[\s,.:;-]*/i;
 
 export function parseCommand(raw, groups = []) {
   const original = (raw || '').trim();
@@ -63,5 +64,22 @@ export function parseCommand(raw, groups = []) {
     }
   }
 
-  return { text, groupName: groupName || null };
+
+  // 6) Команда "избранное" — вырезаем и помечаем
+  let favorite = false;
+  const favRe = /(?:^|\s)в?\s?избранн(?:ое|ые|ым|ому|ом|ого|ой)(?![а-яёА-ЯЁ])/gi;
+  if (favRe.test(text)) {
+    favorite = true;
+    text = text
+      .replace(favRe, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/^[,.;:\s-]+|[,.;:\s-]+$/g, '')
+      .trim();
+  }
+
+  // 7) Команда отмены — только если вся фраза целиком
+  const cancelRe = /^\s*(?:отмена|удали(?:ть)?|не\s+сохраняй|стоп)\s*[.!?]?\s*$/i;
+  const cancelled = cancelRe.test(original);
+
+  return { text, groupName: groupName || null, favorite, cancelled };
 }

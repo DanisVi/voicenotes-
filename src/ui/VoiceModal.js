@@ -1,4 +1,5 @@
 import { createRecognizer, isSpeechSupported } from '../modules/voice.js';
+import { parseCommand } from '../modules/parser.js';
 
 export class VoiceModal {
   constructor(root, { vaultKey, groups = [], onSave, onClose } = {}) {
@@ -13,6 +14,7 @@ export class VoiceModal {
     this.interimText = '';
     this.state = 'idle';
     this.selectedGroupId = null;
+    this.favorite = false;
     this.errorMsg = '';
   }
 
@@ -77,7 +79,24 @@ export class VoiceModal {
   stop() {
     if (this.state !== 'recording') return;
     if (this.rec) { try { this.rec.abort(); } catch (_) {} }
-    this.finalText = (this.interimText || '').trim();
+
+    const raw = (this.interimText || '').trim();
+    const parsed = parseCommand(raw, this.groups || []);
+
+    if (parsed.cancelled) {
+      this.close();
+      return;
+    }
+
+    this.finalText = parsed.text;
+
+    if (parsed.groupName) {
+      const hit = (this.groups || []).find((g) => g.name === parsed.groupName);
+      if (hit) this.selectedGroupId = hit.id;
+    }
+
+    if (parsed.favorite) this.favorite = true;
+
     this.state = 'preview';
     this.updateUI();
   }
@@ -86,7 +105,7 @@ export class VoiceModal {
     const ta = this.el.querySelector('#vm-text');
     const text = ta ? ta.value.trim() : this.finalText;
     if (!text) return this.close();
-    this.onSave && this.onSave({ text, groupId: this.selectedGroupId || null });
+    this.onSave && this.onSave({ text, groupId: this.selectedGroupId || null, favorite: this.favorite });
     this.close();
   }
 
@@ -141,8 +160,19 @@ export class VoiceModal {
   }
 
   renderPreview() {
+    const badgeParts = [];
+    if (this.selectedGroupId) {
+      const g = (this.groups || []).find((x) => x.id === this.selectedGroupId);
+      if (g) badgeParts.push('🎯 ' + g.emoji + ' ' + g.name);
+    }
+    if (this.favorite) badgeParts.push('★ Избранное');
+    const badge = badgeParts.length
+      ? '<div class="text-xs text-blue-600 mb-2">' + badgeParts.join(' · ') + '</div>'
+      : '';
+
     return `
       <p class="text-xs text-gray-500 mb-2">Распознано (можно исправить):</p>
+      ${badge}
       <textarea id="vm-text" rows="3" class="w-full p-3 bg-gray-100 rounded-xl outline-none mb-3 resize-none">${this.finalText}</textarea>
       <div class="text-xs text-gray-500 mb-2">Группа</div>
       <div id="vm-groups" class="flex gap-2 overflow-x-auto pb-2 mb-5"></div>

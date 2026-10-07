@@ -99,20 +99,20 @@ export class MainScreen {
     const modal = new VoiceModal(this.el, {
       vaultKey: this.vaultKey,
       groups: this.data.groups,
-      onSave: ({ text, groupId }) => this.addNoteFromVoice(text, groupId),
+      onSave: ({ text, groupId, favorite }) => this.addNoteFromVoice(text, groupId, favorite),
       onClose: () => { this.voiceModal = null; },
     });
     this.voiceModal = modal;
     modal.mount();
   }
 
-  async addNoteFromVoice(text, groupId) {
+  async addNoteFromVoice(text, groupId, favorite) {
     if (!text) return;
     this.data.notes.unshift({
       id: Date.now(),
       text,
       timestamp: new Date().toISOString(),
-      favorite: false,
+      favorite: !!favorite,
       groupId: groupId || null,
     });
     await this.persist();
@@ -200,7 +200,7 @@ export class MainScreen {
       id: Date.now(),
       text,
       timestamp: new Date().toISOString(),
-      favorite: false,
+      favorite: !!favorite,
       groupId: this.pendingGroupId || null,
     });
     await this.persist();
