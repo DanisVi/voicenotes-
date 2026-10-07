@@ -13,6 +13,7 @@ export class LockScreen {
     this.mode = (await isVaultInitialized()) ? 'unlock' : 'setup';
     this.el = document.createElement('div');
     this.el.className = 'fixed inset-0 z-50 flex flex-col items-center justify-center text-white px-6';
+    this.el.setAttribute('data-theme-lock', '1');
     this.el.style.background = 'linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%)';
     this.el.innerHTML = this.render();
     this.root.appendChild(this.el);

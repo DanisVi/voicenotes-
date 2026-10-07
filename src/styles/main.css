@@ -94,3 +94,8 @@
 }
 [data-theme="dark"] input::placeholder,
 [data-theme="dark"] textarea::placeholder { color: #636366; }
+
+/* LockScreen всегда тёмный (свой градиент) — точки ввода остаются белыми. */
+[data-theme="dark"] [data-theme-lock] .bg-white { background-color: #fff !important; }
+[data-theme="dark"] [data-theme-lock] .text-white { color: #fff !important; }
+[data-theme="dark"] [data-theme-lock] .border-white { border-color: #fff !important; }
