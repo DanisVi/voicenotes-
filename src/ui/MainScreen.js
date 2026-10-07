@@ -1,5 +1,6 @@
 import { VoiceModal } from './VoiceModal.js';
 import { loadEncrypted, saveEncrypted } from '../core/storage.js';
+import { getThemeIcon, cycleTheme } from '../core/theme.js';
 
 export class MainScreen {
   constructor(root, { vaultKey, onLock }) {
@@ -48,7 +49,10 @@ export class MainScreen {
             <h1 class="text-3xl font-bold text-gray-900">Заметки</h1>
             <p class="text-xs text-gray-500 mt-0.5">Всего: ${total} · В избранном: ${favCount}</p>
           </div>
+        <div class="flex items-center gap-2">
+          <button id="theme-btn" class="w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center text-lg">${getThemeIcon()}</button>
           <button id="lock-btn" class="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center text-white">🔒</button>
+        </div>
         </div>
         <input id="search" type="text" placeholder="Поиск..."
           class="mt-3 w-full px-4 py-2.5 bg-white rounded-xl text-sm shadow-sm outline-none" />
@@ -81,6 +85,7 @@ export class MainScreen {
   }
 
   bindEvents() {
+    this.el.querySelector('#theme-btn').addEventListener('click', () => this.onThemeToggle());
     this.el.querySelector('#lock-btn').addEventListener('click', () => this.onLock());
     this.el.querySelector('#voice-btn').addEventListener('click', () => this.openVoice());
     this.el.querySelector('#fab').addEventListener('click', () => this.openSheet());
@@ -95,6 +100,12 @@ export class MainScreen {
       this.query = e.target.value.toLowerCase();
       this.renderList();
     });
+  }
+
+  onThemeToggle() {
+    cycleTheme();
+    const btn = this.el.querySelector('#theme-btn');
+    if (btn) btn.textContent = getThemeIcon();
   }
 
   openVoice() {

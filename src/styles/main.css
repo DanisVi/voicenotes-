@@ -38,3 +38,59 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Этап 12 — тёмная тема (override utility-классов) */
+[data-theme="dark"] body {
+  background-color: #000;
+  color: #F2F2F7;
+}
+[data-theme="dark"] .bg-\[\#F2F2F7\] { background-color: #000 !important; }
+[data-theme="dark"] .bg-\[\#F2F2F7\]\/90 {
+  background-color: rgba(0,0,0,0.75) !important;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+[data-theme="dark"] .bg-white { background-color: #1C1C1E !important; }
+[data-theme="dark"] .bg-white\/95 { background-color: rgba(28,28,30,0.95) !important; }
+[data-theme="dark"] .bg-gray-50 { background-color: #2C2C2E !important; }
+[data-theme="dark"] .bg-gray-100 { background-color: #2C2C2E !important; }
+[data-theme="dark"] .bg-gray-200 { background-color: #3A3A3C !important; }
+[data-theme="dark"] .text-gray-900 { color: #F2F2F7 !important; }
+[data-theme="dark"] .text-gray-700 { color: #D1D1D6 !important; }
+[data-theme="dark"] .text-gray-600 { color: #AEAEB2 !important; }
+[data-theme="dark"] .text-gray-500 { color: #8E8E93 !important; }
+[data-theme="dark"] .text-gray-400 { color: #636366 !important; }
+[data-theme="dark"] .text-gray-300 { color: #48484A !important; }
+[data-theme="dark"] .text-black { color: #F2F2F7 !important; }
+[data-theme="dark"] .text-red-600 { color: #FF453A !important; }
+[data-theme="dark"] .text-red-500 { color: #FF453A !important; }
+[data-theme="dark"] .text-red-400 { color: #FF6961 !important; }
+[data-theme="dark"] .text-green-600 { color: #30D158 !important; }
+[data-theme="dark"] .text-blue-600 { color: #0A84FF !important; }
+[data-theme="dark"] .border-gray-200 { border-color: #38383A !important; }
+[data-theme="dark"] .border-gray-200\/60 { border-color: rgba(56,56,58,0.6) !important; }
+[data-theme="dark"] .border-gray-100 { border-color: #2C2C2E !important; }
+[data-theme="dark"] .bg-red-50 { background-color: rgba(255,69,58,0.12) !important; }
+[data-theme="dark"] .bg-red-500 { background-color: #FF453A !important; }
+[data-theme="dark"] .bg-blue-500 { background-color: #0A84FF !important; }
+[data-theme="dark"] .bg-blue-100 { background-color: rgba(10,132,255,0.15) !important; }
+[data-theme="dark"] .bg-green-500 { background-color: #30D158 !important; }
+/* Инверсия "тёмных" кнопок (замок, активный фильтр "Все")
+   на светлую подложку с тёмным текстом — чтобы сохранить контраст. */
+[data-theme="dark"] .bg-gray-900 { background-color: #F2F2F7 !important; }
+[data-theme="dark"] .bg-gray-800 { background-color: #3A3A3C !important; }
+[data-theme="dark"] .bg-gray-900.text-white,
+[data-theme="dark"] .bg-gray-900 > .text-white { color: #000 !important; }
+/* Иконки/эмодзи в этих кнопках — не тронем, они font-color не имеют. */
+/* Точечная поддержка "градиентной" карточки в SecurityScreen. */
+[data-theme="dark"] .from-gray-900 { --tw-gradient-from: #F2F2F7 !important; }
+[data-theme="dark"] .to-gray-800 { --tw-gradient-to: #D1D1D6 !important; }
+/* Поисковая строка и поля ввода */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea {
+  background-color: #1C1C1E;
+  color: #F2F2F7;
+  border-color: #38383A;
+}
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder { color: #636366; }
