@@ -59,7 +59,7 @@ export class SecurityScreen {
             <button id="export-btn" class="flex-1 bg-blue-500 text-white rounded-lg p-3 text-sm font-semibold">Экспорт</button>
             <button id="import-btn" class="flex-1 bg-gray-100 text-gray-900 rounded-lg p-3 text-sm font-semibold">Импорт</button>
           </div>
-          <input id="import-file" type="file" accept=".vnp,application/json" class="hidden" />
+          <input id="import-file" type="file" accept="*/*" class="hidden" />
           <div id="backup-status" class="text-xs text-gray-500 mt-2 hidden"></div>
         </div>
         <button id="wipe" class="w-full bg-red-50 rounded-xl p-4 shadow-sm flex items-center justify-between text-left">
