@@ -45,7 +45,9 @@ export async function exportVault() {
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
 
-  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const stamp = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + '-' + pad(d.getHours()) + '-' + pad(d.getMinutes());
   const filename = 'voicenotes-' + stamp + '.vnp';
 
   const a = document.createElement('a');
