@@ -1,93 +1,75 @@
 # VoiceNotes Pro
 
-🔒 Локальные зашифрованные голосовые заметки. Всё работает в браузере — данные никогда не покидают устройство.
+Защищённое приложение для заметок с голосовым вводом, локальным AES-256 шифрованием и поддержкой PWA.
 
 **Live:** https://danisvi.github.io/voicenotes-/
 
 ---
 
-## Возможности
+## ✨ Возможности
 
-- 🔐 **Шифрование** — AES-256-GCM, ключ из мастер-пароля (PBKDF2, 250 000 итераций)
-- 🎙 **Голосовой ввод** — через Web Speech API, с превью и ручной правкой
-- 🗣 **Голосовые команды** — во время диктовки: «группа X», «в избранное», «отмена». В модалке появляется badge 🎯 · ★
-- 📝 **Заметки** — CRUD, поиск, избранное (★), привязка к группам
-- 🗂 **Группы** — свои названия + эмодзи-иконки
-- 📴 **PWA** — устанавливается на домашний экран, офлайн-кэш
-- ⏱ **Автоблокировка** — при сворачивании/через 30 с неактивности
-- 💾 **Хранение** — IndexedDB (зашифрованные блобы + canary для верификации пароля)
-- 💾 **Резервная копия** — экспорт/импорт .vnp (AES-256-GCM). При импорте — выбор: **Слить** с текущими или **Заменить**
-- 🌐 **Без бэкенда** — 100% клиентская сторона, ноль сетевых запросов с данными
+- 🔐 **Локальное шифрование** — AES-256-GCM, PBKDF2 (250k), canary-проверка пароля
+- 🎤 **Голосовой ввод** — Web Speech API, распознавание на русском
+- 🗣 **Голосовые команды** — «в группу X», «в избранное», «отмена»
+- 📁 **Группы и избранное** — организация заметок с эмодзи-иконками
+- 🎨 **Темы** — auto / light / dark, переключатель в шапке, anti-FOUC
+- 💾 **Резервное копирование** — `.vnp`, режимы Слить / Заменить
+- ⏱ **Автоблокировка** — по таймауту бездействия
+- 📱 **PWA** — установка на домашний экран, офлайн-режим
 
-## Стек
+---
 
-- **Vite 5.4** + vanilla JS (ESM)
-- **Tailwind CSS 3.4** (PostCSS, autoprefixer)
-- **Web Crypto API** (AES-GCM, PBKDF2)
-- **IndexedDB** через тонкую обёртку
-- **Web Speech API** для распознавания речи
-- **GitHub Pages** + Actions для CI/CD
+## 🛠 Стек
 
-## Архитектура
+- **Frontend:** Vanilla JS (ES-модули), Vite 5
+- **Стили:** Tailwind CSS 3.4 + утилиты (ios-ink, shadow-ios, rounded-ios)
+- **Крипто:** Web Crypto API (AES-256-GCM, PBKDF2)
+- **Хранилище:** IndexedDB (зашифрованный vault + метаданные)
+- **Голос:** Web Speech API (SpeechRecognition)
+- **Сборка:** Vite → GitHub Pages (CI via Actions)
 
-- `src/app.js` — роутинг LockScreen ↔ Shell + autolock
-- `src/main.js` — точка входа
-- `src/core/crypto.js` — AES-256-GCM, PBKDF2 250k
-- `src/core/storage.js` — IndexedDB, saveEncrypted/loadEncrypted
-- `src/core/auth.js` — canary-based верификация пароля
-- `src/core/state.js` — createStore
-- `src/core/autolock.js` — visibilitychange + timeout 30s
-- `src/ui/LockScreen.js` — экран ввода мастер-пароля
-- `src/ui/MainScreen.js` — заметки, поиск, ★, группы, FAB, 🎤
-- `src/ui/SecurityScreen.js` — настройки безопасности
-- `src/ui/GroupsScreen.js` — CRUD групп + эмодзи-picker
-- `src/ui/VoiceModal.js` — Web Speech, состояния записи
-- `src/ui/Shell.js` — 3 таба: Заметки / Группы / Безопасность
-- `src/modules/voice.js` — обёртка Web Speech API
-- `src/modules/parser.js` — парсер голосовых команд (группа / избранное / отмена)
-- `src/utils/dom.js` — el()
-## Модель данных
+---
 
-    Vault = { notes: [...], groups: [...] }
-    Note  = { id, text, timestamp, favorite, groupId }
-    Group = { id, name, emoji }
-
-Всё содержимое Vault шифруется целиком перед записью в IndexedDB.
-
-## Разработка
+## 🚀 Запуск
 
     npm install
-    npm run dev        # http://127.0.0.1:5173
-    npm run build      # -> dist/
-    npm run preview    # локальный предпросмотр прод-сборки
+    npm run dev
 
-## Деплой
+Открыть: http://127.0.0.1:5173
 
-Каждый push в main запускает workflow deploy.yml:
+## 🏗 Сборка
 
-1. npm ci
-2. npm run build
-3. Публикация dist/ на GitHub Pages
+    npm run build
+    npm run preview
 
-Base-path Vite — /voicenotes-/, чтобы ассеты корректно резолвились на danisvi.github.io/voicenotes-/.
+Деплой автоматический — push в main триггерит GitHub Actions.
 
-## Безопасность
+---
 
-- Мастер-пароль нигде не хранится — только деривация ключа
-- crypto.getRandomValues для salt и IV
-- localStorage не используется для чувствительных данных
-- При блокировке ключ обнуляется в памяти
-- Web Speech API — единственный «сетевой» вызов, инициируется только явным нажатием 🎤
+## 🗺 Roadmap
 
-## Что дальше
+### ✅ Готово
 
-- [x] Экспорт/импорт зашифрованного vault (.vnp) с опциями Слить/Заменить
+- [x] Крипто-ядро, IndexedDB, auth
+- [x] LockScreen с PIN-точками
+- [x] MainScreen, группы, избранное
+- [x] Голосовой ввод
+- [x] Автоблокировка
+- [x] PWA (manifest, SW, иконки)
+- [x] Деплой через GitHub Actions
+- [x] Экспорт/импорт ".vnp" (Слить / Заменить)
 - [x] Парсер голосовых команд
-- [ ] Тёмная тема
-- [ ] Поиск по группам + фильтр избранного
-- [ ] Каскадное удаление заметок при удалении группы
+- [x] Тёмная тема auto/light/dark + переключатель + anti-FOUC
 
-## Лицензия
+### 🧭 TODO
+
+- [ ] Мелкие UX-фиксы (сброс favorite, "Без группы")
+- [ ] Парсер: "удали последнюю", фильтры голосом
+- [ ] PWA: splash, офлайн-страница, обновление SW
+- [ ] Поиск + фильтр по группам и избранному
+
+---
+
+## 📄 Лицензия
 
 MIT
-
