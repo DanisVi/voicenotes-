@@ -86,7 +86,9 @@ export class MainScreen {
     this.el.querySelector('#fab').addEventListener('click', () => this.openSheet());
     this.el.querySelector('#cancel').addEventListener('click', () => this.closeSheet());
     this.el.querySelector('#sheet-backdrop').addEventListener('click', () => this.closeSheet());
-    this.el.querySelector('#save').addEventListener('click', () => this.saveNote());
+    this.el.querySelector('#save').addEventListener('click', () => {
+      this.saveNote().catch((e) => console.error('saveNote failed', e));
+    });
     this.el.querySelector('#tab-all').addEventListener('click', () => this.setFilter(false));
     this.el.querySelector('#tab-fav').addEventListener('click', () => this.setFilter(true));
     this.el.querySelector('#search').addEventListener('input', (e) => {
@@ -200,7 +202,7 @@ export class MainScreen {
       id: Date.now(),
       text,
       timestamp: new Date().toISOString(),
-      favorite: !!favorite,
+      favorite: false,
       groupId: this.pendingGroupId || null,
     });
     await this.persist();
