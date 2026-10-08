@@ -96,6 +96,15 @@ export class MainScreen {
     });
     this.el.querySelector('#tab-all').addEventListener('click', () => this.setFilter(false));
     this.el.querySelector('#tab-fav').addEventListener('click', () => this.setFilter(true));
+      this.el.querySelector('#note-text').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          this.saveNote().catch((err) => console.error('saveNote failed', err));
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          this.closeSheet();
+        }
+      });
     this.el.querySelector('#search').addEventListener('input', (e) => {
       this.query = e.target.value.toLowerCase();
       this.renderList();
@@ -157,6 +166,8 @@ export class MainScreen {
     sheet.classList.remove('hidden');
     requestAnimationFrame(() => {
       panel.style.transform = 'translateY(0)';
+        const input = this.el.querySelector("#note-text");
+        if (input) input.focus();
     });
   }
 
