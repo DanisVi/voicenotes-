@@ -214,7 +214,7 @@ export class MainScreen {
       text,
       timestamp: new Date().toISOString(),
       favorite: false,
-      groupId: this.pendingGroupId || null,
+      groupId: this.pendingGroupId ?? null,
     });
     await this.persist();
     this.closeSheet();
