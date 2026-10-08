@@ -278,14 +278,14 @@ export class MainScreen {
       card.className = 'bg-white rounded-xl p-4 shadow-sm';
       card.innerHTML = `
         <div class="flex items-start justify-between mb-1">
-          <span class="text-xs text-gray-400"></span>
+          <span class="text-xs text-gray-400" data-date></span>
           <button class="text-lg leading-none" data-fav>${note.favorite ? '★' : '☆'}</button>
         </div>
-        <p class="text-gray-900 whitespace-pre-wrap break-words mb-2"></p>
+        <p class="text-gray-900 whitespace-pre-wrap break-words mb-2" data-text></p>
         <button class="text-xs text-red-500" data-del>Удалить</button>
       `;
-      card.querySelector('span').textContent = this.formatDate(note.timestamp);
-      card.querySelector('p').textContent = note.text;
+      card.querySelector('[data-date]').textContent = this.formatDate(note.timestamp);
+      card.querySelector('[data-text]').textContent = note.text;
       card.querySelector('[data-fav]').style.color = note.favorite ? '#FF9500' : '#C7C7CC';
       card.querySelector('[data-fav]').addEventListener('click', () => this.toggleFav(note.id));
       card.querySelector('[data-del]').addEventListener('click', () => this.deleteNote(note.id));
