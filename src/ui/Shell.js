@@ -35,7 +35,7 @@ export class Shell {
         </button>
         <button data-tab="security" class="nav-btn flex flex-col items-center gap-1 px-4 py-2">
           <span class="text-xl">🔐</span>
-          <span class="text-[10px] font-medium">Безопасность</span>
+          <span class="text-[10px] font-medium">Настройки</span>
         </button>
       </nav>
     `;
