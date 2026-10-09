@@ -81,6 +81,16 @@ export class MainScreen {
           </div>
         </div>
       </div>
+      <div id="confirm-sheet" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/40" id="confirm-backdrop"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl p-5 w-72">
+          <p id="confirm-text" class="text-center text-gray-900 mb-4">Удалить эту заметку?</p>
+          <div class="flex gap-2">
+            <button id="confirm-no" class="flex-1 py-2.5 bg-gray-100 rounded-xl">Отмена</button>
+            <button id="confirm-yes" class="flex-1 py-2.5 bg-red-500 text-white rounded-xl font-medium">Удалить</button>
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -109,6 +119,9 @@ export class MainScreen {
       this.query = e.target.value.toLowerCase();
       this.renderList();
     });
+    this.el.querySelector('#confirm-no').addEventListener('click', () => this.closeConfirm());
+    this.el.querySelector('#confirm-backdrop').addEventListener('click', () => this.closeConfirm());
+    this.el.querySelector('#confirm-yes').addEventListener('click', () => this.confirmDeleteNote());
   }
 
   onThemeToggle() {
@@ -240,6 +253,24 @@ export class MainScreen {
     if (p) p.textContent = 'Всего: ' + total + ' · В избранном: ' + favCount;
   }
 
+  askDeleteNote(id) {
+    this.pendingDeleteId = id;
+    const sheet = this.el.querySelector('#confirm-sheet');
+    if (sheet) sheet.classList.remove('hidden');
+  }
+
+  closeConfirm() {
+    const sheet = this.el.querySelector('#confirm-sheet');
+    if (sheet) sheet.classList.add('hidden');
+    this.pendingDeleteId = null;
+  }
+
+  async confirmDeleteNote() {
+    const id = this.pendingDeleteId;
+    this.closeConfirm();
+    if (id != null) await this.deleteNote(id);
+  }
+
   async deleteNote(id) {
     this.data.notes = this.data.notes.filter((n) => n.id !== id);
     await this.persist();
@@ -299,7 +330,7 @@ export class MainScreen {
       card.querySelector('[data-text]').textContent = note.text;
       card.querySelector('[data-fav]').style.color = note.favorite ? '#FF9500' : '#C7C7CC';
       card.querySelector('[data-fav]').addEventListener('click', () => this.toggleFav(note.id));
-      card.querySelector('[data-del]').addEventListener('click', () => this.deleteNote(note.id));
+      card.querySelector('[data-del]').addEventListener('click', () => this.askDeleteNote(note.id));
       list.appendChild(card);
     });
   }
