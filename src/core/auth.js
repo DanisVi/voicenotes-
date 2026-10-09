@@ -1,5 +1,5 @@
-import { deriveKey, encrypt, decrypt } from './crypto.js';
-import { getOrCreateSalt, openDB } from './storage.js';
+import { deriveKey, encrypt, decrypt, randomBytes, SALT_LENGTH } from './crypto.js';
+import { getOrCreateSalt, openDB, readMeta, loadEncrypted, writeVaultBundle, META_SALT_KEY } from './storage.js';
 
 export const CANARY_TEXT = 'voicenotes::canary::v1';
 const META_STORE = 'meta';
@@ -74,4 +74,28 @@ export async function clearAuth() {
     t.oncomplete = () => resolve();
     t.onerror = () => reject(t.error);
   });
+}
+
+export async function changePasscode(oldPasscode, newPasscode) {
+  if (!oldPasscode || !newPasscode) throw new Error('PIN не может быть пустым');
+  if (oldPasscode === newPasscode) throw new Error('Новый PIN должен отличаться');
+
+  const oldKey = await verifyPasscode(oldPasscode);
+  if (!oldKey) throw new Error('Текущий PIN неверный');
+
+  const data = await loadEncrypted(oldKey);
+  if (!data) throw new Error('Vault пуст или повреждён');
+
+  const newSalt = randomBytes(SALT_LENGTH);
+  const newKey = await deriveKey(newPasscode, newSalt);
+
+  const newBlob = await encrypt(newKey, JSON.stringify(data));
+  const newCanary = await encrypt(newKey, CANARY_TEXT);
+
+  await writeVaultBundle(newBlob, [
+    [META_SALT_KEY, newSalt],
+    [CANARY_KEY, newCanary],
+  ]);
+
+  return newKey;
 }

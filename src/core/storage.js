@@ -162,3 +162,15 @@ export async function writeRawVaultBlob(payload) {
     t.onerror = () => reject(t.error);
   });
 }
+export async function writeVaultBundle(blob, metaEntries) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const t = db.transaction([VAULT_STORE, META_STORE], 'readwrite');
+    t.objectStore(VAULT_STORE).put(blob, VAULT_BLOB_KEY);
+    const meta = t.objectStore(META_STORE);
+    for (const [k, v] of metaEntries) meta.put(v, k);
+    t.oncomplete = () => resolve();
+    t.onerror = () => reject(t.error);
+    t.onabort = () => reject(t.error);
+  });
+}

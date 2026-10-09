@@ -1,13 +1,14 @@
 import { clearVault, loadEncrypted, saveEncrypted } from '../core/storage.js';
-import { clearAuth } from '../core/auth.js';
+import { clearAuth, changePasscode } from '../core/auth.js';
 import { exportVault, parseBackupFile, decryptBackup, vaultStats, mergeVaults } from '../core/backup.js';
 
 import { setTheme, getThemeMode, getThemeLabel } from '../core/theme.js';
 export class SettingsScreen {
-  constructor(host, { vaultKey, onLock, root }) {
+  constructor(host, { vaultKey, onLock, root, onKeyChange }) {
     this.host = host;
     this.vaultKey = vaultKey;
     this.onLock = onLock;
+    this.onKeyChange = onKeyChange || null;
     this.root = root;
     this.el = null;
   }
@@ -45,6 +46,9 @@ export class SettingsScreen {
             </div>
           </div>
           <div class="text-xs text-gray-400 bg-white/5 rounded-lg p-2">Ключ выводится из вашего пароля и хранится только в памяти</div>
+        <button id="change-pin" class="mt-3 w-full bg-white/10 hover:bg-white/20 rounded-lg p-3 text-left text-sm font-semibold transition-colors">
+          <span>🔑 Сменить PIN</span>
+        </button>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between">
           <div>
@@ -92,6 +96,32 @@ export class SettingsScreen {
           </div>
         </div>
       </div>
+      <div id="pin-sheet" class="fixed inset-0 z-[70] hidden">
+        <div class="absolute inset-0 bg-black/40" id="pin-backdrop"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl p-5 w-80">
+          <p class="text-center font-semibold text-gray-900 mb-4">Смена PIN-кода</p>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">Текущий PIN</label>
+              <input id="pin-old" type="password" inputmode="numeric" maxlength="4" class="w-full border border-gray-200 rounded-lg p-3 text-center text-lg tracking-widest" />
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">Новый PIN</label>
+              <input id="pin-new" type="password" inputmode="numeric" maxlength="4" class="w-full border border-gray-200 rounded-lg p-3 text-center text-lg tracking-widest" />
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">Повторите новый PIN</label>
+              <input id="pin-new2" type="password" inputmode="numeric" maxlength="4" class="w-full border border-gray-200 rounded-lg p-3 text-center text-lg tracking-widest" />
+            </div>
+            <div id="pin-error" class="text-xs text-red-500 text-center hidden"></div>
+            <div class="flex gap-2 pt-1">
+              <button id="pin-cancel" class="flex-1 bg-gray-100 text-gray-900 rounded-lg p-3 text-sm font-semibold">Отмена</button>
+              <button id="pin-save" class="flex-1 bg-blue-500 text-white rounded-lg p-3 text-sm font-semibold">Сохранить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
     `;
   }
 
@@ -100,6 +130,10 @@ export class SettingsScreen {
     this.el.querySelector('#wipe').addEventListener('click', () => this.wipeAll());
     this.el.querySelector('#autolock').addEventListener('click', (e) => this.toggleAutolock(e.currentTarget));
     this.bindBackupEvents();
+    this.el.querySelector('#change-pin').addEventListener('click', () => this.openPinSheet());
+    this.el.querySelector('#pin-cancel').addEventListener('click', () => this.closePinSheet());
+    this.el.querySelector('#pin-backdrop').addEventListener('click', () => this.closePinSheet());
+    this.el.querySelector('#pin-save').addEventListener('click', () => this.submitPinChange());
     this.el.querySelector('#theme-row').addEventListener('click', () => this.openThemePicker());
     this.el.querySelector('#theme-backdrop').addEventListener('click', () => this.closeThemePicker());
     this.el.querySelectorAll('.theme-opt').forEach((btn) => {
@@ -123,6 +157,50 @@ export class SettingsScreen {
     }
   }
 
+
+  openPinSheet() {
+    const sheet = this.el.querySelector('#pin-sheet');
+    sheet.classList.remove('hidden');
+    ['#pin-old', '#pin-new', '#pin-new2'].forEach(s => {
+      this.el.querySelector(s).value = '';
+    });
+    const err = this.el.querySelector('#pin-error');
+    err.classList.add('hidden');
+    err.textContent = '';
+    this.el.querySelector('#pin-old').focus();
+  }
+
+  closePinSheet() {
+    this.el.querySelector('#pin-sheet').classList.add('hidden');
+  }
+
+  async submitPinChange() {
+    const oldPin = this.el.querySelector('#pin-old').value.trim();
+    const newPin = this.el.querySelector('#pin-new').value.trim();
+    const newPin2 = this.el.querySelector('#pin-new2').value.trim();
+    const err = this.el.querySelector('#pin-error');
+
+    const fail = (msg) => {
+      err.textContent = msg;
+      err.classList.remove('hidden');
+    };
+    err.classList.add('hidden');
+
+    if (!oldPin || !newPin || !newPin2) return fail('Заполните все поля');
+    if (!/^[0-9]{4}$/.test(newPin)) return fail('Новый PIN — 4 цифры');
+    if (newPin !== newPin2) return fail('Новые PIN-коды не совпадают');
+    if (oldPin === newPin) return fail('Новый PIN должен отличаться');
+
+    try {
+      const newKey = await changePasscode(oldPin, newPin);
+      this.vaultKey = newKey;
+      if (this.onKeyChange) this.onKeyChange(newKey);
+      this.closePinSheet();
+      this.showToast('PIN изменён', 'ok');
+    } catch (e) {
+      fail(e.message || 'Не удалось сменить PIN');
+    }
+  }
   async wipeAll() {
     const ok = await this.showConfirmDialog({
       title: 'Стереть ВСЕ данные?',

@@ -61,7 +61,7 @@ export class Shell {
       await s.mount();
     } else if (tab === 'security') {
       const s = new SettingsScreen(host, {
-        vaultKey: this.vaultKey, onLock: this.onLock, root: this.root,
+        vaultKey: this.vaultKey, onLock: this.onLock, root: this.root, onKeyChange: (k) => { this.vaultKey = k; },
       });
       this.screens[tab] = s;
       await s.mount();
