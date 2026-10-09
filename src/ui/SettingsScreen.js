@@ -22,10 +22,11 @@ export class SettingsScreen {
   render() {
     return `
       <header class="sticky top-0 z-20 bg-[#F2F2F7]/90 backdrop-blur border-b border-gray-200/60 px-4 pt-8 pb-3">
-        <h1 class="text-3xl font-bold text-gray-900">Безопасность</h1>
-        <p class="text-xs text-gray-500 mt-1">Шифрование и защита данных</p>
+        <h1 class="text-3xl font-bold text-gray-900">Настройки</h1>
+        <p class="text-xs text-gray-500 mt-1">Приложение и данные</p>
       </header>
       <main class="px-4 pt-4 space-y-3">
+      <h2 class="text-xs font-semibold text-gray-500 tracking-wider">🔒 Безопасность</h2>
         <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-5 text-white">
           <div class="flex items-center gap-4 mb-3">
             <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl">🔐</div>
@@ -52,6 +53,7 @@ export class SettingsScreen {
           </div>
           <span class="text-gray-400">→</span>
         </button>
+      <h2 class="text-xs font-semibold text-gray-500 tracking-wider">💾 Данные</h2>
         <div class="bg-white rounded-xl p-4 shadow-sm">
           <div class="font-semibold text-gray-900 mb-1">Резервная копия</div>
           <div class="text-xs text-gray-500 mb-3">Экспорт / импорт зашифрованного vault (.vnp)</div>
