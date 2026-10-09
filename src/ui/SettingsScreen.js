@@ -2,7 +2,7 @@ import { clearVault, loadEncrypted, saveEncrypted } from '../core/storage.js';
 import { clearAuth } from '../core/auth.js';
 import { exportVault, parseBackupFile, decryptBackup, vaultStats, mergeVaults } from '../core/backup.js';
 
-export class SecurityScreen {
+export class SettingsScreen {
   constructor(host, { vaultKey, onLock, root }) {
     this.host = host;
     this.vaultKey = vaultKey;

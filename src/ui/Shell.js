@@ -1,5 +1,5 @@
 import { MainScreen } from './MainScreen.js';
-import { SecurityScreen } from './SecurityScreen.js';
+import { SettingsScreen } from './SettingsScreen.js';
 import { GroupsScreen } from './GroupsScreen.js';
 
 export class Shell {
@@ -60,7 +60,7 @@ export class Shell {
       this.screens[tab] = s;
       await s.mount();
     } else if (tab === 'security') {
-      const s = new SecurityScreen(host, {
+      const s = new SettingsScreen(host, {
         vaultKey: this.vaultKey, onLock: this.onLock, root: this.root,
       });
       this.screens[tab] = s;
