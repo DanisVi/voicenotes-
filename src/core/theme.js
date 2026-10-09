@@ -55,6 +55,12 @@ export function cycleTheme() {
   return next;
 }
 
+export function setTheme(mode) {
+  if (!MODES.includes(mode)) return;
+  writeMode(mode);
+  applyTheme();
+}
+
 export function getThemeIcon() {
   const m = readMode();
   if (m === 'light') return '☀️';

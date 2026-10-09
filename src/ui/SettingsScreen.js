@@ -2,6 +2,7 @@ import { clearVault, loadEncrypted, saveEncrypted } from '../core/storage.js';
 import { clearAuth } from '../core/auth.js';
 import { exportVault, parseBackupFile, decryptBackup, vaultStats, mergeVaults } from '../core/backup.js';
 
+import { setTheme, getThemeMode, getThemeLabel } from '../core/theme.js';
 export class SettingsScreen {
   constructor(host, { vaultKey, onLock, root }) {
     this.host = host;
@@ -26,6 +27,14 @@ export class SettingsScreen {
         <p class="text-xs text-gray-500 mt-1">Приложение и данные</p>
       </header>
       <main class="px-4 pt-4 space-y-3">
+      <h2 class="text-xs font-semibold text-gray-500 tracking-wider">🎨 Внешний вид</h2>
+      <button id="theme-row" class="w-full bg-white rounded-xl p-4 shadow-sm flex items-center justify-between text-left">
+        <div>
+          <div class="font-semibold text-gray-900">Тема</div>
+          <div id="theme-value" class="text-xs text-gray-500">${getThemeLabel()}</div>
+        </div>
+        <span class="text-gray-400">›</span>
+      </button>
       <h2 class="text-xs font-semibold text-gray-500 tracking-wider">🔒 Безопасность</h2>
         <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-5 text-white">
           <div class="flex items-center gap-4 mb-3">
@@ -72,6 +81,17 @@ export class SettingsScreen {
           <span class="text-red-400">→</span>
         </button>
       </main>
+      <div id="theme-sheet" class="fixed inset-0 z-[70] hidden">
+        <div class="absolute inset-0 bg-black/40" id="theme-backdrop"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl p-5 w-72">
+          <p class="text-center font-semibold text-gray-900 mb-4">Тема оформления</p>
+          <div class="space-y-2">
+            <button data-theme-opt="auto" class="theme-opt w-full py-2.5 rounded-xl text-left px-4">Авто</button>
+            <button data-theme-opt="light" class="theme-opt w-full py-2.5 rounded-xl text-left px-4">Светлая</button>
+            <button data-theme-opt="dark" class="theme-opt w-full py-2.5 rounded-xl text-left px-4">Тёмная</button>
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -80,6 +100,11 @@ export class SettingsScreen {
     this.el.querySelector('#wipe').addEventListener('click', () => this.wipeAll());
     this.el.querySelector('#autolock').addEventListener('click', (e) => this.toggleAutolock(e.currentTarget));
     this.bindBackupEvents();
+    this.el.querySelector('#theme-row').addEventListener('click', () => this.openThemePicker());
+    this.el.querySelector('#theme-backdrop').addEventListener('click', () => this.closeThemePicker());
+    this.el.querySelectorAll('.theme-opt').forEach((btn) => {
+      btn.addEventListener('click', () => this.applyThemeChoice(btn.dataset.themeOpt));
+    });
   }
 
   toggleAutolock(el) {
@@ -319,4 +344,29 @@ export class SettingsScreen {
       overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
     });
   }
+  openThemePicker() {
+    const sheet = this.el.querySelector('#theme-sheet');
+    if (!sheet) return;
+    const current = getThemeMode();
+    sheet.querySelectorAll('.theme-opt').forEach((btn) => {
+      const active = btn.dataset.themeOpt === current;
+      btn.classList.toggle('bg-blue-500', active);
+      btn.classList.toggle('text-white', active);
+      btn.classList.toggle('bg-gray-100', !active);
+    });
+    sheet.classList.remove('hidden');
+  }
+
+  closeThemePicker() {
+    const sheet = this.el.querySelector('#theme-sheet');
+    if (sheet) sheet.classList.add('hidden');
+  }
+
+  applyThemeChoice(mode) {
+    setTheme(mode);
+    const val = this.el.querySelector('#theme-value');
+    if (val) val.textContent = getThemeLabel();
+    this.closeThemePicker();
+  }
+
 }
