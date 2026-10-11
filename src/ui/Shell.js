@@ -14,11 +14,13 @@ export class Shell {
 
   async mount() {
     this.el = document.createElement('div');
-    this.el.className = 'min-h-dvh bg-[#F2F2F7]';
+    this.el.className = 'min-h-dvh bg-[#F2F2F7] outline-none';
+    this.el.setAttribute('tabindex', '-1');
     this.el.innerHTML = this.render();
     this.root.appendChild(this.el);
     this.bindEvents();
     await this.switchTab('notes');
+    this.el.focus();
   }
 
   render() {
@@ -45,6 +47,37 @@ export class Shell {
     this.el.querySelectorAll('.nav-btn').forEach((btn) => {
       btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
     });
+    this.onKeydown = (e) => this.handleKeydown(e);
+    this.el.addEventListener('keydown', this.onKeydown);
+    this.onClick = (e) => {
+      const t = e.target;
+      if (t && t.closest && t.closest('input, textarea, select, [contenteditable="true"]')) return;
+      this.el.focus();
+    };
+    this.el.addEventListener('click', this.onClick);
+  }
+
+  handleKeydown(e) {
+    const t = e.target;
+    const inField = t && t.closest && t.closest('input, textarea, select, [contenteditable="true"]');
+
+    // Esc пробрасываем в активный экран (закрытие шитов и т.п.)
+    if (e.key === 'Escape') {
+      const screen = this.screens[this.currentTab];
+      if (screen && typeof screen.handleEscape === 'function' && screen.handleEscape()) {
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (inField) return;
+
+    // Alt+1/2/3 — переключение табов
+    if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+      if (e.key === '1') { e.preventDefault(); this.switchTab('notes'); }
+      else if (e.key === '2') { e.preventDefault(); this.switchTab('groups'); }
+      else if (e.key === '3') { e.preventDefault(); this.switchTab('security'); }
+    }
   }
 
   async switchTab(tab) {
@@ -81,7 +114,11 @@ export class Shell {
 
   unmount() {
     Object.values(this.screens).forEach((s) => s?.unmount?.());
-    if (this.el) this.el.remove();
+    if (this.el) {
+      if (this.onKeydown) this.el.removeEventListener('keydown', this.onKeydown);
+      if (this.onClick) this.el.removeEventListener('click', this.onClick);
+      this.el.remove();
+    }
     this.el = null;
   }
 }
