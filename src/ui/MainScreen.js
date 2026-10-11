@@ -62,6 +62,10 @@ export class MainScreen {
         </div>
         <div id="date-chips" class="flex gap-2 mt-2 overflow-x-auto pb-1"></div>
         <div id="group-chips" class="flex gap-2 mt-2 overflow-x-auto pb-1"></div>
+        <div id="filter-status" class="hidden items-center justify-between mt-2">
+          <span id="filter-count" class="text-xs text-gray-500"></span>
+          <button id="filter-reset" class="text-xs text-blue-500 font-medium">Сбросить</button>
+        </div>
       </header>
       <main id="list" class="px-4 pt-4 space-y-3"></main>
       <button id="voice-btn" class="fixed bottom-40 right-5 w-12 h-12 bg-white border border-gray-200 rounded-full text-xl shadow-lg z-20">🎤</button>
@@ -122,6 +126,8 @@ export class MainScreen {
     this.el.querySelector('#confirm-no').addEventListener('click', () => this.closeConfirm());
     this.el.querySelector('#confirm-backdrop').addEventListener('click', () => this.closeConfirm());
     this.el.querySelector('#confirm-yes').addEventListener('click', () => this.confirmDeleteNote());
+    const resetBtn = this.el.querySelector('#filter-reset');
+    if (resetBtn) resetBtn.addEventListener('click', () => this.resetFilters());
   }
 
 
@@ -249,6 +255,51 @@ export class MainScreen {
     return true;
   }
 
+  applyFilters(notes) {
+    let result = notes;
+    if (this.filterFav) result = result.filter((n) => n.favorite);
+    if (this.query) result = result.filter((n) => n.text.toLowerCase().includes(this.query));
+    if (this.filterGroupId) result = result.filter((n) => n.groupId === this.filterGroupId);
+    if (this.filterDate) result = result.filter((n) => this.matchDateFilter(n));
+    return result;
+  }
+
+  activeFilterCount() {
+    let c = 0;
+    if (this.query) c++;
+    if (this.filterFav) c++;
+    if (this.filterGroupId) c++;
+    if (this.filterDate) c++;
+    return c;
+  }
+
+  updateFilterStatus() {
+    const status = this.el.querySelector('#filter-status');
+    if (!status) return;
+    const count = this.activeFilterCount();
+    if (count === 0) {
+      status.classList.add('hidden');
+      status.classList.remove('flex');
+    } else {
+      status.classList.remove('hidden');
+      status.classList.add('flex');
+      const label = this.el.querySelector('#filter-count');
+      if (label) label.textContent = 'Фильтров: ' + count;
+    }
+  }
+
+  resetFilters() {
+    this.query = '';
+    this.filterFav = false;
+    this.filterGroupId = null;
+    this.filterDate = null;
+    const s = this.el.querySelector('#search');
+    if (s) s.value = '';
+    this.setFilter(false);     // обновит стили табов + renderList
+    this.fillDateChips();
+    this.fillGroupChips();
+  }
+
   fillNoteGroupChips() {
     const wrap = this.el.querySelector('#note-group-chips');
     if (!wrap) return;
@@ -337,18 +388,22 @@ export class MainScreen {
   }
 
   renderList() {
+    this.updateFilterStatus();
     const list = this.el.querySelector('#list');
     list.innerHTML = '';
-    let notes = this.data.notes;
-    if (this.filterFav) notes = notes.filter((n) => n.favorite);
-    if (this.query) notes = notes.filter((n) => n.text.toLowerCase().includes(this.query));
-    if (this.filterGroupId) notes = notes.filter((n) => n.groupId === this.filterGroupId);
-    if (this.filterDate) notes = notes.filter((n) => this.matchDateFilter(n));    if (notes.length === 0) {
+    const notes = this.applyFilters(this.data.notes);
+    if (notes.length === 0) {
+      const filtered = this.activeFilterCount() > 0;
       list.innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 text-center">
           <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mb-4 text-3xl">📝</div>
-          <p class="text-gray-400">${this.query ? 'Ничего не найдено' : 'Заметок пока нет'}</p>
+          <p class="text-gray-400">${filtered ? 'Ничего не найдено по фильтрам' : 'Заметок пока нет'}</p>
+          ${filtered ? '<button id="empty-reset" class="mt-4 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm">Сбросить фильтры</button>' : ''}
         </div>`;
+      if (filtered) {
+        const btn = list.querySelector('#empty-reset');
+        if (btn) btn.addEventListener('click', () => this.resetFilters());
+      }
       return;
     }
     notes.forEach((note) => {
