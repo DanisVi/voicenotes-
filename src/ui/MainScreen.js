@@ -11,6 +11,7 @@ export class MainScreen {
     this.query = '';
     this.filterFav = false;
     this.filterGroupId = null;
+    this.filterDate = null;
   }
 
   async mount() {
@@ -26,6 +27,7 @@ export class MainScreen {
     this.el.innerHTML = this.render();
     this.root.appendChild(this.el);
     this.bindEvents();
+    this.fillDateChips();
     this.fillGroupChips();
     this.renderList();
   }
@@ -58,6 +60,7 @@ export class MainScreen {
           <button id="tab-all" class="px-3 py-1.5 rounded-full text-xs font-medium bg-gray-900 text-white">Все</button>
           <button id="tab-fav" class="px-3 py-1.5 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-200">★ Избранное</button>
         </div>
+        <div id="date-chips" class="flex gap-2 mt-2 overflow-x-auto pb-1"></div>
         <div id="group-chips" class="flex gap-2 mt-2 overflow-x-auto pb-1"></div>
       </header>
       <main id="list" class="px-4 pt-4 space-y-3"></main>
@@ -204,6 +207,47 @@ export class MainScreen {
     this.fillGroupChips();
     this.renderList();
   }
+  fillDateChips() {
+    const wrap = this.el.querySelector('#date-chips');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    const opts = [
+      { id: null, label: 'Все даты' },
+      { id: 'today', label: 'Сегодня' },
+      { id: 'yesterday', label: 'Вчера' },
+      { id: 'week', label: '7 дней' },
+      { id: 'month', label: '30 дней' },
+    ];
+    opts.forEach((o) => {
+      const btn = document.createElement('button');
+      const active = this.filterDate === o.id;
+      btn.className = 'px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ' + (active ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 border border-gray-200');
+      btn.textContent = o.label;
+      btn.addEventListener('click', () => this.setDateFilter(o.id));
+      wrap.appendChild(btn);
+    });
+  }
+
+  setDateFilter(id) {
+    this.filterDate = id;
+    this.fillDateChips();
+    this.renderList();
+  }
+
+  matchDateFilter(note) {
+    if (!this.filterDate) return true;
+    const ts = new Date(note.timestamp).getTime();
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    if (this.filterDate === 'today') return ts >= startOfToday;
+    if (this.filterDate === 'yesterday') {
+      const startOfYesterday = startOfToday - 24 * 60 * 60 * 1000;
+      return ts >= startOfYesterday && ts < startOfToday;
+    }
+    if (this.filterDate === 'week') return ts >= now.getTime() - 7 * 24 * 60 * 60 * 1000;
+    if (this.filterDate === 'month') return ts >= now.getTime() - 30 * 24 * 60 * 60 * 1000;
+    return true;
+  }
 
   fillNoteGroupChips() {
     const wrap = this.el.querySelector('#note-group-chips');
@@ -299,7 +343,7 @@ export class MainScreen {
     if (this.filterFav) notes = notes.filter((n) => n.favorite);
     if (this.query) notes = notes.filter((n) => n.text.toLowerCase().includes(this.query));
     if (this.filterGroupId) notes = notes.filter((n) => n.groupId === this.filterGroupId);
-    if (notes.length === 0) {
+    if (this.filterDate) notes = notes.filter((n) => this.matchDateFilter(n));    if (notes.length === 0) {
       list.innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 text-center">
           <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mb-4 text-3xl">📝</div>
