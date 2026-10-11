@@ -258,7 +258,13 @@ export class MainScreen {
   applyFilters(notes) {
     let result = notes;
     if (this.filterFav) result = result.filter((n) => n.favorite);
-    if (this.query) result = result.filter((n) => n.text.toLowerCase().includes(this.query));
+    if (this.query) {
+      const words = this.query.split(/\s+/).filter(Boolean);
+      result = result.filter((n) => {
+        const t = n.text.toLowerCase();
+        return words.every((w) => t.includes(w));
+      });
+    }
     if (this.filterGroupId) result = result.filter((n) => n.groupId === this.filterGroupId);
     if (this.filterDate) result = result.filter((n) => this.matchDateFilter(n));
     return result;
