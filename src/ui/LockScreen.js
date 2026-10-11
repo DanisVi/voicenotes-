@@ -12,12 +12,14 @@ export class LockScreen {
   async mount() {
     this.mode = (await isVaultInitialized()) ? 'unlock' : 'setup';
     this.el = document.createElement('div');
-    this.el.className = 'fixed inset-0 z-50 flex flex-col items-center justify-center text-white px-6';
+    this.el.className = 'fixed inset-0 z-50 flex flex-col items-center justify-center text-white px-6 outline-none';
     this.el.setAttribute('data-theme-lock', '1');
+    this.el.setAttribute('tabindex', '-1');
     this.el.style.background = 'linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%)';
     this.el.innerHTML = this.render();
     this.root.appendChild(this.el);
     this.bindEvents();
+    this.el.focus();
   }
 
   render() {
@@ -42,6 +44,19 @@ export class LockScreen {
   }
 
   bindEvents() {
+    this.onKeydown = (e) => {
+      if (e.key.length === 1 && e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        this.onKey(e.key);
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        this.onKey('del');
+      }
+    };
+    this.el.addEventListener('keydown', this.onKeydown);
+    // клик в любом месте возвращает фокус контейнеру,
+    // чтобы клавиатура работала после клика по фону
+    this.el.addEventListener('click', () => this.el.focus());
     this.renderDots();
     this.renderPad();
   }
@@ -113,7 +128,10 @@ export class LockScreen {
   }
 
   unmount() {
-    if (this.el) this.el.remove();
+    if (this.el) {
+      if (this.onKeydown) this.el.removeEventListener('keydown', this.onKeydown);
+      this.el.remove();
+    }
     this.el = null;
   }
 }
