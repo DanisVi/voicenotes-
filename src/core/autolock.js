@@ -45,15 +45,23 @@ export function createAutolock({ onLock } = {}) {
     }
   };
 
-  document.addEventListener('visibilitychange', check);
-  window.addEventListener('blur', () => {
+  const onBlur = () => {
     if (document.visibilityState === 'hidden') check();
-  });
+  };
+
+  document.addEventListener('visibilitychange', check);
+  window.addEventListener('blur', onBlur);
+
+  let destroyed = false;
 
   return {
     destroy() {
+      if (destroyed) return;
+      destroyed = true;
       document.removeEventListener('visibilitychange', check);
-      if (timer) clearTimeout(timer);
+      window.removeEventListener('blur', onBlur);
+      if (timer) { clearTimeout(timer); timer = null; }
+      hiddenAt = null;
     },
   };
 }
