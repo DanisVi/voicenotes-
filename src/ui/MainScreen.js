@@ -146,7 +146,7 @@ export class MainScreen {
   async addNoteFromVoice(text, groupId, favorite) {
     if (!text) return;
     this.data.notes.unshift({
-      id: Date.now(),
+      id: crypto.randomUUID(),
       text,
       timestamp: new Date().toISOString(),
       favorite: !!favorite,
@@ -328,7 +328,7 @@ export class MainScreen {
     const text = this.el.querySelector('#note-text').value.trim();
     if (!text) return;
     this.data.notes.unshift({
-      id: Date.now(),
+      id: crypto.randomUUID(),
       text,
       timestamp: new Date().toISOString(),
       favorite: false,

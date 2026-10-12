@@ -168,7 +168,7 @@ export class GroupsScreen {
       const g = this.data.groups.find((x) => x.id === this.editingId);
       if (g) { g.name = name; g.emoji = this.selectedEmoji; }
     } else {
-      this.data.groups.push({ id: Date.now(), name, emoji: this.selectedEmoji });
+      this.data.groups.push({ id: crypto.randomUUID(), name, emoji: this.selectedEmoji });
     }
     await this.persist();
     this.closeSheet();
