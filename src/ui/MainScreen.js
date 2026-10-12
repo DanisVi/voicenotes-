@@ -439,6 +439,10 @@ export class MainScreen {
   }
 
   unmount() {
+    if (this.voiceModal) {
+      this.voiceModal.close();
+      this.voiceModal = null;
+    }
     if (this.el) this.el.remove();
     this.el = null;
   }

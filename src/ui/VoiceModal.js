@@ -45,7 +45,11 @@ export class VoiceModal {
   }
 
   unmount() {
-    if (this.rec) { try { this.rec.abort(); } catch (_) {} }
+    this.state = 'closed';
+    if (this.rec) {
+      try { this.rec.abort(); } catch (_) {}
+      this.rec = null;
+    }
     if (this.el) this.el.remove();
     this.el = null;
   }
@@ -58,12 +62,14 @@ export class VoiceModal {
     this.rec = createRecognizer({
       lang: 'ru-RU',
       onResult: ({ final, interim }) => {
+        if (this.state !== 'recording' || !this.el) return;
         this.interimText = ((final || "") + " " + (interim || "")).trim();
         const t = this.el.querySelector('#vm-transcript');
         if (t) t.textContent = this.interimText || '…';
       },
       onError: (e) => {
         if (e.error === 'aborted') return;
+        if (!this.el) return;
         this.errorMsg = e.error || 'unknown';
         this.state = 'error';
         this.updateUI();
@@ -117,6 +123,7 @@ export class VoiceModal {
   }
 
   updateUI() {
+    if (!this.el) return;
     const body = this.el.querySelector('#vm-body');
     if (this.state === 'unsupported') {
       body.innerHTML = `
