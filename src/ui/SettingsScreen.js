@@ -3,6 +3,7 @@ import { clearAuth, changePasscode } from '../core/auth.js';
 import { exportVault, parseBackupFile, decryptBackup, vaultStats, mergeVaults } from '../core/backup.js';
 
 import { setTheme, getThemeMode, getThemeLabel } from '../core/theme.js';
+import { isAutolockEnabled, setAutolockEnabled } from '../core/autolock.js';
 export class SettingsScreen {
   constructor(host, { vaultKey, onLock, root, onKeyChange }) {
     this.host = host;
@@ -19,6 +20,7 @@ export class SettingsScreen {
     this.el.innerHTML = this.render();
     this.host.appendChild(this.el);
     this.bindEvents();
+    this.applyAutolockState(isAutolockEnabled());
   }
 
   render() {
@@ -128,7 +130,7 @@ export class SettingsScreen {
   bindEvents() {
     this.el.querySelector('#lock-now').addEventListener('click', () => this.onLock());
     this.el.querySelector('#wipe').addEventListener('click', () => this.wipeAll());
-    this.el.querySelector('#autolock').addEventListener('click', (e) => this.toggleAutolock(e.currentTarget));
+    this.el.querySelector('#autolock').addEventListener('click', () => this.toggleAutolock());
     this.bindBackupEvents();
     this.el.querySelector('#change-pin').addEventListener('click', () => this.openPinSheet());
     this.el.querySelector('#pin-cancel').addEventListener('click', () => this.closePinSheet());
@@ -141,20 +143,21 @@ export class SettingsScreen {
     });
   }
 
-  toggleAutolock(el) {
+  toggleAutolock() {
+    const next = !isAutolockEnabled();
+    setAutolockEnabled(next);
+    this.applyAutolockState(next);
+  }
+
+  applyAutolockState(enabled) {
+    const el = this.el.querySelector('#autolock');
+    if (!el) return;
     const knob = el.querySelector('div');
-    const active = el.dataset.on !== '0';
-    if (active) {
-      el.dataset.on = '0';
-      el.className = 'w-12 h-7 rounded-full bg-gray-300 relative transition-colors cursor-pointer';
-      knob.style.transform = 'translateX(0)';
-      localStorage.setItem('voicenotes_autolock', '0');
-    } else {
-      el.dataset.on = '1';
-      el.className = 'w-12 h-7 rounded-full bg-green-500 relative transition-colors cursor-pointer';
-      knob.style.transform = 'translateX(20px)';
-      localStorage.setItem('voicenotes_autolock', '1');
-    }
+    el.dataset.on = enabled ? '1' : '0';
+    el.className = enabled
+      ? 'w-12 h-7 rounded-full bg-green-500 relative transition-colors cursor-pointer'
+      : 'w-12 h-7 rounded-full bg-gray-300 relative transition-colors cursor-pointer';
+    if (knob) knob.style.transform = enabled ? 'translateX(20px)' : 'translateX(0)';
   }
 
 
