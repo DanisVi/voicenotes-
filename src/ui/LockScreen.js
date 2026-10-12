@@ -143,7 +143,7 @@ export class LockScreen {
     } finally {
       this.submitting = false;
     }
-    this.renderDots();
+    if (this.el) this.renderDots();
   }
 
   showError(msg) {
