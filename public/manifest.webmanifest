@@ -2,8 +2,8 @@
   "name": "VoiceNotes Pro",
   "short_name": "VoiceNotes",
   "description": "Зашифрованные заметки с голосовым вводом и группами",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/voicenotes-/",
+  "scope": "/voicenotes-/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F2F2F7",
@@ -11,13 +11,13 @@
   "lang": "ru",
   "icons": [
     {
-      "src": "/icon-192.svg",
+      "src": "/voicenotes-/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.svg",
+      "src": "/voicenotes-/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
