@@ -7,6 +7,7 @@ export class LockScreen {
     this.el = null;
     this.buffer = '';
     this.mode = 'check';
+    this.pendingPin = null;
   }
 
   async mount() {
@@ -23,11 +24,7 @@ export class LockScreen {
   }
 
   render() {
-    const isSetup = this.mode === 'setup';
-    const title = isSetup ? 'Создайте код' : 'VoiceNotes Pro';
-    const subtitle = isSetup
-      ? 'Он защитит ваши заметки'
-      : 'Введите код-пароль';
+    const { title, subtitle } = this.getHeaderText();
     return `
       <div class="w-20 h-20 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center mb-6">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -35,12 +32,24 @@ export class LockScreen {
           <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
         </svg>
       </div>
-      <h1 class="text-3xl font-bold mb-2">${title}</h1>
-      <p class="text-white/50 text-sm mb-8 text-center">${subtitle}</p>
+      <h1 id="lock-title" class="text-3xl font-bold mb-2">${title}</h1>
+      <p id="lock-subtitle" class="text-white/50 text-sm mb-8 text-center">${subtitle}</p>
       <div id="dots" class="flex gap-3 mb-8"></div>
       <div id="pad" class="grid grid-cols-3 gap-4 max-w-xs w-full"></div>
       <div id="err" class="mt-6 text-red-400 text-sm text-center min-h-[20px]"></div>
     `;
+  }
+
+  getHeaderText() {
+    const isSetup = this.mode === 'setup';
+    const isConfirm = isSetup && this.pendingPin !== null;
+    if (!isSetup) {
+      return { title: 'VoiceNotes Pro', subtitle: 'Введите код-пароль' };
+    }
+    if (isConfirm) {
+      return { title: 'Повторите код', subtitle: 'Введите его ещё раз' };
+    }
+    return { title: 'Создайте код', subtitle: 'Он защитит ваши заметки' };
   }
 
   bindEvents() {
@@ -103,9 +112,20 @@ export class LockScreen {
     this.buffer = '';
     try {
       if (this.mode === 'setup') {
-        const key = await createVault(code);
-        this.showError('');
-        this.onUnlock(key);
+        if (this.pendingPin === null) {
+          this.pendingPin = code;
+          this.showError('');
+          this.updateHeader();
+        } else if (code !== this.pendingPin) {
+          this.pendingPin = null;
+          this.showError('Коды не совпадают, попробуйте снова');
+          this.updateHeader();
+        } else {
+          const key = await createVault(code);
+          this.pendingPin = null;
+          this.showError('');
+          this.onUnlock(key);
+        }
       } else {
         const key = await verifyPasscode(code);
         if (key) {
@@ -125,6 +145,14 @@ export class LockScreen {
     const err = this.el.querySelector('#err');
     err.textContent = msg;
     if (msg && navigator.vibrate) navigator.vibrate([80, 80, 80]);
+  }
+
+  updateHeader() {
+    const { title, subtitle } = this.getHeaderText();
+    const titleEl = this.el.querySelector('#lock-title');
+    const subEl = this.el.querySelector('#lock-subtitle');
+    if (titleEl) titleEl.textContent = title;
+    if (subEl) subEl.textContent = subtitle;
   }
 
   unmount() {
