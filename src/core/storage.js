@@ -10,6 +10,18 @@ const VAULT_BLOB_KEY = 'encrypted_blob';
 
 let dbPromise = null;
 
+export const VAULT_CHANGED_CHANNEL = 'voicenotes-vault-changed';
+let notifyChannel = null;
+
+function notifyVaultChanged() {
+  try {
+    if (!notifyChannel) notifyChannel = new BroadcastChannel(VAULT_CHANGED_CHANNEL);
+    notifyChannel.postMessage('changed');
+  } catch (e) {
+    // BroadcastChannel недоступен — синхронизация вкладок просто выключена
+  }
+}
+
 export function openDB() {
   if (dbPromise) return dbPromise;
   dbPromise = new Promise((resolve, reject) => {
@@ -87,7 +99,7 @@ export async function saveEncrypted(key, data) {
     openDB().then((db) => {
       const t = db.transaction(VAULT_STORE, 'readwrite');
       t.objectStore(VAULT_STORE).put(payload, VAULT_BLOB_KEY);
-      t.oncomplete = () => resolve();
+      t.oncomplete = () => { notifyVaultChanged(); resolve(); };
       t.onerror = () => reject(t.error);
     }).catch(reject);
   });

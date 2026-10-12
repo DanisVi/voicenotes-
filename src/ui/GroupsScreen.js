@@ -1,4 +1,4 @@
-import { loadEncrypted, saveEncrypted } from '../core/storage.js';
+import { loadEncrypted, saveEncrypted, VAULT_CHANGED_CHANNEL } from '../core/storage.js';
 
 const EMOJI_PALETTE = [
   '📁', '🎵', '💼', '🏠', '🎓', '⭐', '❤️', '🔥',
@@ -12,6 +12,9 @@ export class GroupsScreen {
     this.onLock = onLock;
     this.el = null;
     this.data = { notes: [], groups: [] };
+    this.vaultStale = false;
+    this.savingCount = 0;
+    this.vaultChannel = null;
   }
 
   async mount() {
@@ -28,14 +31,51 @@ export class GroupsScreen {
     this.root.appendChild(this.el);
     this.bindEvents();
     this.renderGroups();
+    try {
+      this.vaultChannel = new BroadcastChannel(VAULT_CHANGED_CHANNEL);
+      this.vaultChannel.onmessage = () => this.onVaultChanged();
+    } catch (e) {
+      this.vaultChannel = null;
+    }
   }
 
   async persist() {
+    this.savingCount += 1;
     try {
       await saveEncrypted(this.vaultKey, this.data);
     } catch (e) {
       console.error('groups save failed', e);
+    } finally {
+      this.savingCount -= 1;
+      if (this.savingCount === 0 && this.vaultStale) {
+        this.vaultStale = false;
+        this.reloadVault();
+      }
     }
+  }
+
+  async reloadVault() {
+    try {
+      const loaded = await loadEncrypted(this.vaultKey);
+      if (loaded && Array.isArray(loaded.notes)) {
+        this.data = loaded;
+        if (!Array.isArray(this.data.groups)) this.data.groups = [];
+        this.renderGroups();
+      }
+    } catch (e) {
+      console.error('groups reload failed', e);
+    }
+  }
+
+  onVaultChanged() {
+    const sheetOpen =
+      (this.el && !this.el.querySelector('#group-sheet').classList.contains('hidden')) ||
+      (this.el && !this.el.querySelector('#confirm-sheet').classList.contains('hidden'));
+    if (sheetOpen || this.savingCount > 0) {
+      this.vaultStale = true;
+      return;
+    }
+    this.reloadVault();
   }
 
   render() {
@@ -105,6 +145,10 @@ export class GroupsScreen {
     const panel = this.el.querySelector('#group-sheet-panel');
     panel.style.transform = 'translateY(100%)';
     setTimeout(() => sheet.classList.add('hidden'), 300);
+    if (this.vaultStale) {
+      this.vaultStale = false;
+      this.reloadVault();
+    }
   }
 
   renderEmojiGrid() {
@@ -200,6 +244,10 @@ export class GroupsScreen {
   }
 
   unmount() {
+    if (this.vaultChannel) {
+      this.vaultChannel.close();
+      this.vaultChannel = null;
+    }
     if (this.el) this.el.remove();
     this.el = null;
   }

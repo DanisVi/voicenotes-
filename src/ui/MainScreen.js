@@ -1,5 +1,5 @@
 import { VoiceModal } from './VoiceModal.js';
-import { loadEncrypted, saveEncrypted } from '../core/storage.js';
+import { loadEncrypted, saveEncrypted, VAULT_CHANGED_CHANNEL } from '../core/storage.js';
 import { renderMarkdown } from './markdown.js';
 
 export class MainScreen {
@@ -13,6 +13,9 @@ export class MainScreen {
     this.filterFav = false;
     this.filterGroupId = null;
     this.filterDate = null;
+    this.vaultStale = false;
+    this.savingCount = 0;
+    this.vaultChannel = null;
   }
 
   async mount() {
@@ -31,14 +34,52 @@ export class MainScreen {
     this.fillDateChips();
     this.fillGroupChips();
     this.renderList();
+    try {
+      this.vaultChannel = new BroadcastChannel(VAULT_CHANGED_CHANNEL);
+      this.vaultChannel.onmessage = () => this.onVaultChanged();
+    } catch (e) {
+      this.vaultChannel = null;
+    }
   }
 
   async persist() {
+    this.savingCount += 1;
     try {
       await saveEncrypted(this.vaultKey, this.data);
     } catch (e) {
       console.error('save failed', e);
+    } finally {
+      this.savingCount -= 1;
+      if (this.savingCount === 0 && this.vaultStale) {
+        this.vaultStale = false;
+        this.reloadVault();
+      }
     }
+  }
+
+  async reloadVault() {
+    try {
+      const loaded = await loadEncrypted(this.vaultKey);
+      if (loaded && Array.isArray(loaded.notes)) {
+        this.data = loaded;
+        if (!Array.isArray(this.data.groups)) this.data.groups = [];
+        this.refreshHeader();
+        this.fillGroupChips();
+        this.renderList();
+      }
+    } catch (e) {
+      console.error('reload failed', e);
+    }
+  }
+
+  onVaultChanged() {
+    const sheet = this.el && this.el.querySelector('#sheet');
+    const sheetOpen = sheet && !sheet.classList.contains('hidden');
+    if (sheetOpen || this.savingCount > 0) {
+      this.vaultStale = true;
+      return;
+    }
+    this.reloadVault();
   }
 
   render() {
@@ -191,6 +232,10 @@ export class MainScreen {
     const panel = this.el.querySelector('#sheet-panel');
     panel.style.transform = 'translateY(100%)';
     setTimeout(() => sheet.classList.add('hidden'), 300);
+    if (this.vaultStale) {
+      this.vaultStale = false;
+      this.reloadVault();
+    }
   }
 
   fillGroupChips() {
@@ -439,6 +484,10 @@ export class MainScreen {
   }
 
   unmount() {
+    if (this.vaultChannel) {
+      this.vaultChannel.close();
+      this.vaultChannel = null;
+    }
     if (this.voiceModal) {
       this.voiceModal.close();
       this.voiceModal = null;
