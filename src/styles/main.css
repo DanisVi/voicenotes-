@@ -61,6 +61,12 @@
 [data-theme="dark"] .bg-gray-800 { background-color: #3A3A3C !important; }
 [data-theme="dark"] .bg-gray-900.text-white,
 [data-theme="dark"] .bg-gray-900 > .text-white { color: #000 !important; }
+/* Градиентная карточка "Защита активна" в тёмной теме инвертируется в светлую
+   (см. переопределения from/to ниже) — текст и подложки внутри неё должны стать тёмными. */
+[data-theme="dark"] .from-gray-900.text-white,
+[data-theme="dark"] .from-gray-900 .text-white { color: #000 !important; }
+[data-theme="dark"] .from-gray-900 .bg-white\/10 { background-color: rgba(0, 0, 0, 0.06) !important; }
+[data-theme="dark"] .from-gray-900 .bg-white\/5 { background-color: rgba(0, 0, 0, 0.04) !important; }
 /* Иконки/эмодзи в этих кнопках — не тронем, они font-color не имеют. */
 /* Точечная поддержка "градиентной" карточки в SecurityScreen. */
 [data-theme="dark"] .from-gray-900 { --tw-gradient-from: #F2F2F7 !important; }
