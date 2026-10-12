@@ -58,6 +58,7 @@ export class Shell {
   }
 
   handleKeydown(e) {
+    if (e.defaultPrevented) return;
     const t = e.target;
     const inField = t && t.closest && t.closest('input, textarea, select, [contenteditable="true"]');
 
