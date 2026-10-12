@@ -58,7 +58,7 @@ export class VoiceModal {
     this.rec = createRecognizer({
       lang: 'ru-RU',
       onResult: ({ final, interim }) => {
-        this.interimText = (final || interim || "").trim();
+        this.interimText = ((final || "") + " " + (interim || "")).trim();
         const t = this.el.querySelector('#vm-transcript');
         if (t) t.textContent = this.interimText || '…';
       },
@@ -68,8 +68,9 @@ export class VoiceModal {
         this.state = 'error';
         this.updateUI();
       },
-      onEnd: () => {
+      onEnd: (text) => {
         if (this.state !== 'recording') return;
+        if (text) this.interimText = text;
         this.stop();
       },
     });

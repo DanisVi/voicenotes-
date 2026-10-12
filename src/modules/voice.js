@@ -26,11 +26,15 @@ export function createRecognizer({
   let finalText = '';
 
   rec.onresult = (e) => {
-    const last = e.results[e.results.length - 1];
-    if (!last) return;
-    const t = (last[0].transcript || '').trim();
-    if (last.isFinal) onResult && onResult({ final: t, interim: '' });
-    else onResult && onResult({ final: '', interim: t });
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const res = e.results[i];
+      const t = (res[0].transcript || '').trim();
+      if (!t) continue;
+      if (res.isFinal) finalText = (finalText ? finalText + ' ' : '') + t;
+      else interim = (interim ? interim + ' ' : '') + t;
+    }
+    onResult && onResult({ final: finalText, interim });
   };
 
   rec.onerror = (e) => onError && onError(e);
