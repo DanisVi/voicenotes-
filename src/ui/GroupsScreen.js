@@ -142,9 +142,9 @@ export class GroupsScreen {
       card.className = 'bg-white rounded-xl p-4 shadow-sm flex items-center justify-between';
       card.innerHTML = `
         <div class="flex items-center gap-3">
-          <span class="text-2xl">${g.emoji}</span>
+          <span class="text-2xl js-group-emoji"></span>
           <div>
-            <div class="font-medium text-gray-900">${g.name}</div>
+            <div class="font-medium text-gray-900 js-group-name"></div>
             <div class="text-xs text-gray-400">${count} заметок</div>
           </div>
         </div>
@@ -152,6 +152,8 @@ export class GroupsScreen {
           <button class="text-gray-400 text-lg" data-edit>✏️</button>
           <button class="text-gray-400 text-lg" data-del>🗑</button>
         </div>`;
+      card.querySelector('.js-group-emoji').textContent = g.emoji || '';
+      card.querySelector('.js-group-name').textContent = g.name || '';
       card.querySelector('[data-edit]').addEventListener('click', () => this.openSheet(g));
       card.querySelector('[data-del]').addEventListener('click', () => this.askDelete(g));
       list.appendChild(card);
