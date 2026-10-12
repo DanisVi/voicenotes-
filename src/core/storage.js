@@ -6,7 +6,6 @@ const VAULT_STORE = 'vault';
 const META_STORE = 'meta';
 
 const META_SALT_KEY = 'salt';
-const META_VERSION_KEY = 'schemaVersion';
 const VAULT_BLOB_KEY = 'encrypted_blob';
 
 let dbPromise = null;
@@ -81,17 +80,6 @@ export async function getOrCreateSalt() {
   return salt;
 }
 
-export async function hasVault() {
-  return new Promise((resolve, reject) => {
-    openDB().then((db) => {
-      const t = db.transaction(VAULT_STORE, 'readonly');
-      const req = t.objectStore(VAULT_STORE).get(VAULT_BLOB_KEY);
-      req.onsuccess = () => resolve(req.result != null);
-      req.onerror = () => reject(req.error);
-    }).catch(reject);
-  });
-}
-
 export async function saveEncrypted(key, data) {
   const json = JSON.stringify(data);
   const payload = await encrypt(key, json);
@@ -139,10 +127,6 @@ export async function readMeta(key) {
   return getMeta(key);
 }
 
-export async function writeMeta(key, value) {
-  return setMeta(key, value);
-}
-
 export async function readRawVaultBlob() {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -153,15 +137,6 @@ export async function readRawVaultBlob() {
   });
 }
 
-export async function writeRawVaultBlob(payload) {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const t = db.transaction(VAULT_STORE, 'readwrite');
-    t.objectStore(VAULT_STORE).put(payload, VAULT_BLOB_KEY);
-    t.oncomplete = () => resolve();
-    t.onerror = () => reject(t.error);
-  });
-}
 export async function writeVaultBundle(blob, metaEntries) {
   const db = await openDB();
   return new Promise((resolve, reject) => {

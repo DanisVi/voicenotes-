@@ -15,10 +15,6 @@ export function setAutolockEnabled(enabled) {
   localStorage.setItem(LS_KEY, enabled ? 'on' : 'off');
 }
 
-export function setAutolockTimeout(ms) {
-  localStorage.setItem(LS_TIMEOUT, String(ms));
-}
-
 export function createAutolock({ onLock } = {}) {
   let hiddenAt = null;
   let timer = null;

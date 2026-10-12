@@ -10,7 +10,6 @@ export class SettingsScreen {
     this.vaultKey = vaultKey;
     this.onLock = onLock;
     this.onKeyChange = onKeyChange || null;
-    this.root = root;
     this.el = null;
   }
 

@@ -8,11 +8,8 @@ import {
 
 import {
   META_SALT_KEY,
-  VAULT_BLOB_KEY,
   readMeta,
-  writeMeta,
   readRawVaultBlob,
-  writeRawVaultBlob,
 } from './storage.js';
 
 import { CANARY_KEY, CANARY_TEXT } from './auth.js';

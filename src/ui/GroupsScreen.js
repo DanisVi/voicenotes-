@@ -204,8 +204,3 @@ export class GroupsScreen {
     this.el = null;
   }
 }
-
-export function getGroupById(groups, id) {
-  if (!id) return null;
-  return groups.find((g) => g.id === id) || null;
-}

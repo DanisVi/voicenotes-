@@ -1,10 +1,9 @@
 import { deriveKey, encrypt, decrypt, randomBytes, SALT_LENGTH } from './crypto.js';
-import { getOrCreateSalt, openDB, readMeta, loadEncrypted, writeVaultBundle, META_SALT_KEY } from './storage.js';
+import { getOrCreateSalt, openDB, loadEncrypted, writeVaultBundle, META_SALT_KEY } from './storage.js';
 
 export const CANARY_TEXT = 'voicenotes::canary::v1';
 const META_STORE = 'meta';
 export const CANARY_KEY = 'canary';
-const WEBAUTHN_KEY = 'webauthn_cred';
 async function metaGet(key) {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -48,29 +47,11 @@ export async function verifyPasscode(passcode) {
     return null;
   }
 }
-export async function isBiometricAvailable() {
-  if (!window.PublicKeyCredential) return false;
-  try {
-    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-  } catch {
-    return false;
-  }
-}
-
-export async function saveWebAuthnCredential(credentialId) {
-  await metaSet(WEBAUTHN_KEY, credentialId);
-}
-export async function hasWebAuthnCredential() {
-  const id = await metaGet(WEBAUTHN_KEY);
-  return id != null;
-}
-
 export async function clearAuth() {
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const t = db.transaction(META_STORE, 'readwrite');
     t.objectStore(META_STORE).delete(CANARY_KEY);
-    t.objectStore(META_STORE).delete(WEBAUTHN_KEY);
     t.oncomplete = () => resolve();
     t.onerror = () => reject(t.error);
   });

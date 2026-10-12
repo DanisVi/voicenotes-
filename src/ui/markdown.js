@@ -4,8 +4,6 @@ import DOMPurify from '../vendor/purify.es.js';
 marked.setOptions({
   breaks: true,
   gfm: true,
-  headerIds: false,
-  mangle: false,
 });
 
 const SANITIZE_CONFIG = {
