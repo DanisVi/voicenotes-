@@ -71,6 +71,13 @@ export class Shell {
       return;
     }
 
+    // Ctrl/Cmd+K — фокус в поиск (с любых экранов, в том числе из поля ввода)
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key.toLowerCase() === 'k' || e.code === 'KeyK')) {
+      e.preventDefault();
+      this.focusSearch();
+      return;
+    }
+
     if (inField) return;
 
     // Alt+1/2/3 — переключение табов
@@ -78,6 +85,18 @@ export class Shell {
       if (e.key === '1') { e.preventDefault(); this.switchTab('notes'); }
       else if (e.key === '2') { e.preventDefault(); this.switchTab('groups'); }
       else if (e.key === '3') { e.preventDefault(); this.switchTab('security'); }
+    }
+  }
+
+  focusSearch() {
+    const focusIt = () => {
+      const s = this.el.querySelector('#search');
+      if (s) s.focus();
+    };
+    if (this.currentTab !== 'notes') {
+      this.switchTab('notes').then(focusIt);
+    } else {
+      focusIt();
     }
   }
 
