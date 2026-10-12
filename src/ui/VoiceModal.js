@@ -156,26 +156,18 @@ export class VoiceModal {
     }
     if (this.state === 'preview') {
       body.innerHTML = this.renderPreview();
+      const ta = body.querySelector('#vm-text');
+      if (ta) ta.value = this.finalText;
       this.bindPreviewEvents();
       return;
     }
   }
 
   renderPreview() {
-    const badgeParts = [];
-    if (this.selectedGroupId) {
-      const g = (this.groups || []).find((x) => x.id === this.selectedGroupId);
-      if (g) badgeParts.push('🎯 ' + g.emoji + ' ' + g.name);
-    }
-    if (this.favorite) badgeParts.push('★ Избранное');
-    const badge = badgeParts.length
-      ? '<div class="text-xs text-blue-600 mb-2">' + badgeParts.join(' · ') + '</div>'
-      : '';
-
     return `
       <p class="text-xs text-gray-500 mb-2">Распознано (можно исправить):</p>
-      ${badge}
-      <textarea id="vm-text" rows="3" class="w-full p-3 bg-gray-100 rounded-xl outline-none mb-3 resize-none">${this.finalText}</textarea>
+      <div class="text-xs text-blue-600 mb-2 js-badge hidden"></div>
+      <textarea id="vm-text" rows="3" class="w-full p-3 bg-gray-100 rounded-xl outline-none mb-3 resize-none"></textarea>
       <div class="text-xs text-gray-500 mb-2">Группа</div>
       <div id="vm-groups" class="flex gap-2 overflow-x-auto pb-2 mb-5"></div>
       <div class="flex gap-2">
@@ -186,6 +178,22 @@ export class VoiceModal {
   }
 
   bindPreviewEvents() {
+    const badgeParts = [];
+    if (this.selectedGroupId) {
+      const g = (this.groups || []).find((x) => x.id === this.selectedGroupId);
+      if (g) badgeParts.push('🎯 ' + (g.emoji || '') + ' ' + (g.name || ''));
+    }
+    if (this.favorite) badgeParts.push('★ Избранное');
+    const badgeEl = this.el.querySelector('.js-badge');
+    if (badgeEl) {
+      if (badgeParts.length) {
+        badgeEl.textContent = badgeParts.join(' · ');
+        badgeEl.classList.remove('hidden');
+      } else {
+        badgeEl.textContent = '';
+        badgeEl.classList.add('hidden');
+      }
+    }
     const groups = this.el.querySelector('#vm-groups');
     const mk = (label, id) => {
       const btn = document.createElement('button');
