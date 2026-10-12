@@ -4,6 +4,7 @@ import { exportVault, parseBackupFile, decryptBackup, vaultStats, mergeVaults } 
 
 import { setTheme, getThemeMode, getThemeLabel } from '../core/theme.js';
 import { isAutolockEnabled, setAutolockEnabled } from '../core/autolock.js';
+import pkg from '../../package.json';
 export class SettingsScreen {
   constructor(host, { vaultKey, onLock, root, onKeyChange }) {
     this.host = host;
@@ -85,6 +86,21 @@ export class SettingsScreen {
           </div>
           <span class="text-red-400">→</span>
         </button>
+      <h2 class="text-xs font-semibold text-gray-500 tracking-wider">ℹ️ О приложении</h2>
+        <div class="bg-white rounded-xl p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-gray-900">Версия</span>
+            <span class="text-xs text-gray-500">${pkg.version}</span>
+          </div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-gray-900">Лицензия</span>
+            <span class="text-xs text-gray-500">MIT</span>
+          </div>
+          <a href="https://github.com/DanisVi/voicenotes-" target="_blank" rel="noopener" class="flex items-center justify-between text-left w-full">
+            <span class="font-semibold text-blue-600">Исходники на GitHub</span>
+            <span class="text-blue-600">↗</span>
+          </a>
+        </div>
       </main>
       <div id="theme-sheet" class="fixed inset-0 z-[70] hidden">
         <div class="absolute inset-0 bg-black/40" id="theme-backdrop"></div>
