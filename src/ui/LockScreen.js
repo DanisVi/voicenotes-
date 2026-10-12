@@ -8,6 +8,7 @@ export class LockScreen {
     this.buffer = '';
     this.mode = 'check';
     this.pendingPin = null;
+    this.submitting = false;
   }
 
   async mount() {
@@ -102,12 +103,14 @@ export class LockScreen {
       this.buffer += k;
     }
     this.renderDots();
-    if (this.buffer.length === 4) {
+    if (this.buffer.length === 4 && !this.submitting) {
       setTimeout(() => this.submit(), 150);
     }
   }
 
   async submit() {
+    if (this.submitting) return;
+    this.submitting = true;
     const code = this.buffer;
     this.buffer = '';
     try {
@@ -121,8 +124,8 @@ export class LockScreen {
           this.showError('Коды не совпадают, попробуйте снова');
           this.updateHeader();
         } else {
-          const key = await createVault(code);
           this.pendingPin = null;
+          const key = await createVault(code);
           this.showError('');
           this.onUnlock(key);
         }
@@ -137,6 +140,8 @@ export class LockScreen {
       }
     } catch (e) {
       this.showError('Ошибка: ' + e.message);
+    } finally {
+      this.submitting = false;
     }
     this.renderDots();
   }
