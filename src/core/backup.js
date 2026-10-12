@@ -125,6 +125,11 @@ export function vaultStats(vault) {
   };
 }
 
+function noteTs(n) {
+  const t = Date.parse(n && n.timestamp);
+  return Number.isFinite(t) ? t : (Number(n && n.timestamp) || 0);
+}
+
 // Слияние двух vault'ов без побочек.
 // groups: union по id, локальные приоритетнее.
 // notes:  union по id, при коллизии — версия с большим timestamp.
@@ -162,8 +167,8 @@ export function mergeVaults(local, imported) {
       notesById.set(n.id, n);
       continue;
     }
-    const a = Number(existing.timestamp) || 0;
-    const b = Number(n.timestamp) || 0;
+    const a = noteTs(existing);
+    const b = noteTs(n);
     notesById.set(n.id, b >= a ? n : existing);
   }
 
@@ -175,7 +180,7 @@ export function mergeVaults(local, imported) {
   });
 
   // Порядок: новые заметки сверху, группы по алфавиту (ru).
-  notes.sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
+  notes.sort((a, b) => noteTs(b) - noteTs(a));
   groups.sort((a, b) =>
     String(a.name || '').localeCompare(String(b.name || ''), 'ru')
   );
