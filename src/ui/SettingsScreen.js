@@ -344,7 +344,7 @@ export class SettingsScreen {
         '    <button id="_pw_ok" class="flex-1 bg-blue-500 text-white rounded-lg p-3 text-sm font-semibold">Импорт</button>' +
         '  </div>' +
         '</div>';
-      document.body.appendChild(overlay);
+      this.el.appendChild(overlay);
 
       const input = overlay.querySelector('#_pw_input');
       const close = (val) => { overlay.remove(); resolve(val); };
@@ -386,7 +386,7 @@ export class SettingsScreen {
         '    <button id="_ic_cancel" class="w-full bg-gray-100 text-gray-900 rounded-lg p-3 text-sm font-semibold">Отмена</button>' +
         '  </div>' +
         '</div>';
-      document.body.appendChild(overlay);
+      this.el.appendChild(overlay);
 
       const close = (val) => {
         overlay.remove();
@@ -417,7 +417,7 @@ export class SettingsScreen {
         '    <button id="_cf_ok" class="' + btnCls + '">' + confirmText + '</button>' +
         '  </div>' +
         '</div>';
-      document.body.appendChild(overlay);
+      this.el.appendChild(overlay);
 
       const close = (val) => { overlay.remove(); resolve(val); };
       overlay.querySelector('#_cf_cancel').addEventListener('click', () => close(false));
