@@ -1,5 +1,9 @@
 import { isVaultInitialized, createVault, verifyPasscode } from '../core/auth.js';
 
+const MAX_ATTEMPTS = 5;
+const LOCK_BASE_MS = 30_000;
+const LOCK_MAX_MS = 900_000;
+
 export class LockScreen {
   constructor(root, { onUnlock }) {
     this.root = root;
@@ -9,6 +13,8 @@ export class LockScreen {
     this.mode = 'check';
     this.pendingPin = null;
     this.submitting = false;
+    this.failedAttempts = 0;
+    this.lockedUntil = 0;
   }
 
   async mount() {
@@ -130,12 +136,27 @@ export class LockScreen {
           this.onUnlock(key);
         }
       } else {
+        if (Date.now() < this.lockedUntil) {
+          const left = Math.ceil((this.lockedUntil - Date.now()) / 1000);
+          this.showError('Слишком много попыток. Подождите ' + left + ' сек');
+          if (this.el) this.renderDots();
+          return;
+        }
         const key = await verifyPasscode(code);
         if (key) {
+          this.failedAttempts = 0;
+          this.lockedUntil = 0;
           this.showError('');
           this.onUnlock(key);
         } else {
-          this.showError('Неверный код');
+          this.failedAttempts += 1;
+          if (this.failedAttempts >= MAX_ATTEMPTS) {
+            const lockMs = Math.min(LOCK_BASE_MS * Math.pow(2, this.failedAttempts - MAX_ATTEMPTS), LOCK_MAX_MS);
+            this.lockedUntil = Date.now() + lockMs;
+            this.showError('Слишком много попыток. Подождите ' + Math.ceil(lockMs / 1000) + ' сек');
+          } else {
+            this.showError('Неверный код');
+          }
         }
       }
     } catch (e) {
