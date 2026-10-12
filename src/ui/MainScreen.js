@@ -1,5 +1,6 @@
 import { VoiceModal } from './VoiceModal.js';
 import { loadEncrypted, saveEncrypted } from '../core/storage.js';
+import { renderMarkdown } from './markdown.js';
 
 export class MainScreen {
   constructor(root, { vaultKey, onLock }) {
@@ -420,11 +421,16 @@ export class MainScreen {
           <span class="text-xs text-gray-400" data-date></span>
           <button class="text-lg leading-none" data-fav>${note.favorite ? '★' : '☆'}</button>
         </div>
-        <p class="text-gray-900 whitespace-pre-wrap break-words mb-2" data-text></p>
-        <button class="text-xs text-red-500" data-del>Удалить</button>
+          <div class="md-body text-gray-900 break-words mb-2" data-text></div>        <button class="text-xs text-red-500" data-del>Удалить</button>
       `;
       card.querySelector('[data-date]').textContent = this.formatDate(note.timestamp);
-      card.querySelector('[data-text]').textContent = note.text;
+      const textEl = card.querySelector('[data-text]');
+      const html = renderMarkdown(note.text);
+      if (html === null) {
+       textEl.textContent = note.text;
+       } else {
+           textEl.innerHTML = html;
+       }
       card.querySelector('[data-fav]').style.color = note.favorite ? '#FF9500' : '#C7C7CC';
       card.querySelector('[data-fav]').addEventListener('click', () => this.toggleFav(note.id));
       card.querySelector('[data-del]').addEventListener('click', () => this.askDeleteNote(note.id));

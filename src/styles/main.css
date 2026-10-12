@@ -99,3 +99,81 @@
 [data-theme="dark"] [data-theme-lock] .bg-white { background-color: #fff !important; }
 [data-theme="dark"] [data-theme-lock] .text-white { color: #fff !important; }
 [data-theme="dark"] [data-theme-lock] .border-white { border-color: #fff !important; }
+/* Markdown-рендер в заметках */
+.md-body {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.md-body > *:first-child { margin-top: 0; }
+.md-body > *:last-child  { margin-bottom: 0; }
+
+.md-body p {
+  margin: 0 0 0.5em 0;
+}
+
+.md-body h1,
+.md-body h2,
+.md-body h3,
+.md-body h4 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0.6em 0 0.3em 0;
+}
+.md-body h1 { font-size: 1.15em; }
+.md-body h2 { font-size: 1.05em; }
+.md-body h3,
+.md-body h4 { font-size: 1em; }
+
+.md-body ul,
+.md-body ol {
+  margin: 0.4em 0 0.5em 0;
+  padding-left: 1.4em;
+}
+.md-body ul { list-style: disc; }
+.md-body ol { list-style: decimal; }
+.md-body li { margin: 0.15em 0; }
+.md-body li > p { margin: 0; }
+
+.md-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+}
+
+.md-body pre {
+  margin: 0.5em 0;
+  padding: 0.6em 0.8em;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.md-body pre code {
+  padding: 0;
+  background: transparent;
+  font-size: 0.85em;
+}
+
+.md-body blockquote {
+  margin: 0.5em 0;
+  padding: 0.2em 0 0.2em 0.8em;
+  border-left: 3px solid currentColor;
+  opacity: 0.75;
+}
+
+.md-body a {
+  color: #007AFF;
+  text-decoration: underline;
+}
+
+.md-body hr {
+  margin: 0.8em 0;
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.md-body strong { font-weight: 600; }
+.md-body em { font-style: italic; }
+.md-body del { text-decoration: line-through; opacity: 0.7; }
