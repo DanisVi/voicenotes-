@@ -134,8 +134,10 @@ export class VoiceModal {
         <div class="text-center">
           <button id="vm-mic" class="w-24 h-24 rounded-full bg-red-500 text-white text-4xl mx-auto mb-4 animate-pulse">🎤</button>
           <p class="text-sm text-gray-500 mb-2">Слушаю… (тап — стоп)</p>
-          <p id="vm-transcript" class="text-gray-900 min-h-[3rem] mb-5 whitespace-pre-wrap">${this.interimText || '…'}</p>
+          <p id="vm-transcript" class="text-gray-900 min-h-[3rem] mb-5 whitespace-pre-wrap">…</p>
         </div>`;
+      const transcriptEl = body.querySelector('#vm-transcript');
+      if (transcriptEl) transcriptEl.textContent = this.interimText || '…';
       body.querySelector('#vm-mic').onclick = () => this.stop();
       return;
     }
