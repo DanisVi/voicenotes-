@@ -43,7 +43,6 @@ export class App {
     if (this.shell) {
       this.shell.unmount();
       this.shell = null;
-    this.autolock = null;
     }
     await this.start();
   }
