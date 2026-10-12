@@ -6,14 +6,22 @@ marked.setOptions({
   gfm: true,
 });
 
+// DOMPurify вычищает атрибут type у <input> (собственная валидация), поэтому
+// восстанавливаем type=checkbox после санитизации. Единственный вид input в нашем
+// markdown — чекбокс из GFM task list; on*-обработчики DOMPurify стирает в любом случае.
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.tagName === 'INPUT') node.setAttribute('type', 'checkbox');
+});
+
 const SANITIZE_CONFIG = {
   ALLOWED_TAGS: [
     'p', 'br', 'strong', 'em', 'del', 'code', 'pre',
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'ul', 'ol', 'li',
     'blockquote', 'hr', 'a',
+    'input',
   ],
-  ALLOWED_ATTR: ['href', 'title', 'target', 'rel'],
+  ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'type', 'checked'],
   ALLOWED_URI_REGEXP: /^(?:https?|mailto):/i,
 };
 

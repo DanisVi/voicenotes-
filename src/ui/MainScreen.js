@@ -170,6 +170,37 @@ export class MainScreen {
     this.el.querySelector('#confirm-yes').addEventListener('click', () => this.confirmDeleteNote());
     const resetBtn = this.el.querySelector('#filter-reset');
     if (resetBtn) resetBtn.addEventListener('click', () => this.resetFilters());
+    this.el.querySelector('#list').addEventListener('click', (e) => this.onListClick(e));
+  }
+
+  onListClick(e) {
+    const box = e.target.closest('li input[type="checkbox"]');
+    if (!box) return;
+    e.preventDefault();
+    const card = box.closest('[data-note-id]');
+    if (!card) return;
+    const note = this.data.notes.find((n) => String(n.id) === card.dataset.noteId);
+    if (!note) return;
+    const items = Array.from(card.querySelectorAll('.md-body li')).filter(
+      (li) => li.querySelector('input[type="checkbox"]')
+    );
+    const li = box.closest('li');
+    const taskIndex = items.indexOf(li);
+    if (taskIndex < 0) return;
+    note.text = this.toggleTaskInText(note.text, taskIndex);
+    this.persist().then(() => this.renderList());
+  }
+
+  toggleTaskInText(text, targetIndex) {
+    let seen = 0;
+    const lines = text.split('\n').map((line) => {
+      const m = line.match(/^(\s*(?:[-*+]|\d+\.)\s+\[)([ xX])(\]\s+.*)$/);
+      if (!m) return line;
+      if (seen++ !== targetIndex) return line;
+      const box = m[2] === ' ' ? 'x' : ' ';
+      return m[1] + box + m[3];
+    });
+    return lines.join('\n');
   }
 
 
@@ -461,6 +492,7 @@ export class MainScreen {
     notes.forEach((note) => {
       const card = document.createElement('div');
       card.className = 'bg-white rounded-xl p-4 shadow-sm';
+      card.dataset.noteId = note.id;
       card.innerHTML = `
         <div class="flex items-start justify-between mb-1">
           <span class="text-xs text-gray-400" data-date></span>
