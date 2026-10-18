@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  voicenotes:
+    build: .
+    container_name: voicenotes-pro
+    ports:
+      - "8080:80"
+    restart: unless-stopped
